@@ -1,13 +1,13 @@
 import { Suspense } from "react"
-import SearchForm from "../../components/SearchForm"
 import SearchResults from "../../components/SearchResults"
 
-export default function SearchPage({
+export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const query = typeof searchParams.q === "string" ? searchParams.q : ""
+  const { q } = await searchParams;
+  const query = typeof q === "string" ? q : ""
 
   return (
     <div className="container mx-auto px-4 py-8">

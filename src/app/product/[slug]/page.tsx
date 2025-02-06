@@ -3,8 +3,9 @@ import { getProduct } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { extractProductIdFromSlug } from "../../../utils/slugUtils"
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const productId = extractProductIdFromSlug(params.slug)
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const productId = extractProductIdFromSlug(slug)
   if (productId === -1) {
     // Handle invalid slug
     return <div>Invalid product URL</div>
