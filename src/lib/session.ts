@@ -62,3 +62,8 @@ export async function setUserSessionCookie(
     maxAge: 60 * 60 * 24 * 7, // 1 week
   });
 }
+
+export async function clearUserSessionCookie(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete("user_session");
+}

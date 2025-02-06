@@ -1,6 +1,6 @@
 import { getUserSession } from "../lib/session";
 import FakeLogin from "../components/FakeLogin";
-import { handleFakeLogin } from "./actions/auth";
+import { login, logout } from "./actions/auth";
 
 export default async function Home() {
   const session = await getUserSession();
@@ -22,7 +22,7 @@ export default async function Home() {
         applications using the latest technologies.
       </p>
       <div className="text-center">
-        <FakeLogin login={handleFakeLogin} initialSession={session} />
+        <FakeLogin login={login} logout={logout} initialSession={session} />
       </div>
     </div>
   );

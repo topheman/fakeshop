@@ -7,9 +7,11 @@ import React from "react";
 
 export default function FakeLogin({
   login,
+  logout,
   initialSession,
 }: {
   login: () => Promise<{ session: UserSession } | { error: string }>;
+  logout: () => Promise<{ session: null } | { error: string }>;
   initialSession: UserSession | null;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -21,15 +23,25 @@ export default function FakeLogin({
   if (session) {
     return (
       <>
-        <p className="text-green-600 font-semibold">
+        <p className="text-green-600 font-semibold mb-4">
           You are logged in as {session.infos.firstName}{" "}
           {session.infos.lastName}
         </p>
-        <p>
-          <Button className="bg-primary text-white text-lg py-3 px-6 hover:bg-primary/90">
-            Logout - todo
-          </Button>
-        </p>
+        <Button
+          className="bg-primary text-white text-lg py-3 px-6 hover:bg-primary/90"
+          onClick={() =>
+            startTransition(async () => {
+              const result = await logout();
+              if (!("session" in result)) {
+                setError(result.error || "Logout failed");
+              } else {
+                setSession(null);
+              }
+            })
+          }
+        >
+          Logout
+        </Button>
       </>
     );
   }
