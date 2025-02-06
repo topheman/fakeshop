@@ -1,48 +1,48 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, useTransition } from "react"
-import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { Search } from "lucide-react"
-import { searchProducts } from "../lib/api"
-import type { Product } from "../types"
-import Image from "next/image"
-import { Combobox } from "@headlessui/react"
-import { generateProductSlug } from "../utils/slugUtils"
+import { useState, useEffect, useCallback, useTransition } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { Search } from "lucide-react";
+import { searchProducts } from "../lib/api";
+import type { Product } from "../types";
+import Image from "next/image";
+import { Combobox } from "@headlessui/react";
+import { generateProductSlug } from "../utils/slugUtils";
 
 export default function SearchCombobox({ initialQuery = "" }) {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-  const [query, setQuery] = useState(initialQuery)
-  const [suggestions, setSuggestions] = useState<Product[]>([])
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const pathname = usePathname()
-  const [isPending, startTransition] = useTransition()
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [query, setQuery] = useState(initialQuery);
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams)
-      params.set(name, value)
+      const params = new URLSearchParams(searchParams);
+      params.set(name, value);
 
-      return params.toString()
+      return params.toString();
     },
     [searchParams],
-  )
+  );
 
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (query) {
-        const results = await searchProducts(query)
-        setSuggestions(results.products.slice(0, 5))
+        const results = await searchProducts(query);
+        setSuggestions(results.products.slice(0, 5));
       } else {
-        setSuggestions([])
+        setSuggestions([]);
       }
-    }
-    fetchSuggestions()
-  }, [query])
+    };
+    fetchSuggestions();
+  }, [query]);
 
   const handleChange = (value: Product | string | null) => {
     if (value === null) {
-      return
+      return;
     }
 
     if (typeof value === "string") {
@@ -50,20 +50,20 @@ export default function SearchCombobox({ initialQuery = "" }) {
       startTransition(() => {
         if (pathname === "/search") {
           // If already on search page, update the URL without navigation
-          router.push("/search?" + createQueryString("q", value))
+          router.push("/search?" + createQueryString("q", value));
         } else {
-          router.push(`/search?q=${encodeURIComponent(value)}`)
+          router.push(`/search?q=${encodeURIComponent(value)}`);
         }
-      })
+      });
     } else {
       // Handle product selection
-      setSelectedProduct(value)
-      const slug = generateProductSlug(value.title, value.id)
-      router.push(`/product/${slug}`)
+      setSelectedProduct(value);
+      const slug = generateProductSlug(value.title, value.id);
+      router.push(`/product/${slug}`);
     }
-    setQuery("")
-    setSuggestions([])
-  }
+    setQuery("");
+    setSuggestions([]);
+  };
 
   return (
     <div className="relative flex-grow max-w-md mx-4">
@@ -109,7 +109,9 @@ export default function SearchCombobox({ initialQuery = "" }) {
                         height={40}
                         className="mr-2 rounded"
                       />
-                      <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
+                      <span
+                        className={`block truncate ${selected ? "font-medium" : "font-normal"}`}
+                      >
                         {product.title}
                       </span>
                     </div>
@@ -130,6 +132,5 @@ export default function SearchCombobox({ initialQuery = "" }) {
         )}
       </Combobox>
     </div>
-  )
+  );
 }
-

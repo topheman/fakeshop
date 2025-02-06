@@ -1,13 +1,13 @@
-import { Suspense } from "react"
-import SearchResults from "../../components/SearchResults"
+import { Suspense } from "react";
+import SearchResults from "../../components/SearchResults";
 
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { q } = await searchParams;
-  const query = typeof q === "string" ? q : ""
+  const query = typeof q === "string" ? q : "";
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -18,6 +18,5 @@ export default async function SearchPage({
         <SearchResults query={query} />
       </Suspense>
     </div>
-  )
+  );
 }
-

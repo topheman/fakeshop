@@ -1,42 +1,46 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { searchProducts } from "../lib/api"
-import ProductGrid from "../app/components/ProductGrid"
-import type { Product } from "../../types"
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { searchProducts } from "../lib/api";
+import ProductGrid from "../app/components/ProductGrid";
+import type { Product } from "../../types";
 
-export default function SearchResults({ query: initialQuery }: { query: string }) {
-  const [results, setResults] = useState<Product[]>([])
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const searchParams = useSearchParams()
+export default function SearchResults({
+  query: initialQuery,
+}: {
+  query: string;
+}) {
+  const [results, setResults] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const query = searchParams.get("q") || initialQuery
+  const query = searchParams.get("q") || initialQuery;
 
   useEffect(() => {
     const fetchResults = async () => {
       if (query) {
-        setLoading(true)
+        setLoading(true);
         try {
-          const searchResults = await searchProducts(query)
-          setResults(searchResults.products)
+          const searchResults = await searchProducts(query);
+          setResults(searchResults.products);
         } catch (error) {
-          console.error("Error fetching search results:", error)
-          setResults([])
+          console.error("Error fetching search results:", error);
+          setResults([]);
         } finally {
-          setLoading(false)
+          setLoading(false);
         }
       } else {
-        setResults([])
+        setResults([]);
       }
-    }
+    };
 
-    fetchResults()
-  }, [query])
+    fetchResults();
+  }, [query]);
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   return (
@@ -51,6 +55,5 @@ export default function SearchResults({ query: initialQuery }: { query: string }
         <p>Use the search box above to find products.</p>
       )}
     </div>
-  )
+  );
 }
-

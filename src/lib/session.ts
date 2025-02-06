@@ -1,34 +1,34 @@
-import { cookies } from "next/headers"
-import { faker } from "@faker-js/faker"
+import { cookies } from "next/headers";
+import { faker } from "@faker-js/faker";
 
 export interface UserSession {
   infos: {
-    firstName: string
-    lastName: string
-    address: string
-    country: string
-    phoneNumber: string
-    email: string
-  }
+    firstName: string;
+    lastName: string;
+    address: string;
+    country: string;
+    phoneNumber: string;
+    email: string;
+  };
   cart: {
     items: Array<{
-      id: number
-      quantity: number
-    }>
-  }
+      id: number;
+      quantity: number;
+    }>;
+  };
 }
 
 export async function getUserSession(): Promise<UserSession | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get("user_session")
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get("user_session");
   if (sessionCookie) {
     try {
-      return JSON.parse(sessionCookie.value)
+      return JSON.parse(sessionCookie.value);
     } catch {
-      return null
+      return null;
     }
   }
-  return null
+  return null;
 }
 
 export function createUserSession(): UserSession {
@@ -44,13 +44,15 @@ export function createUserSession(): UserSession {
     cart: {
       items: [],
     },
-  }
+  };
 
-  return session
+  return session;
 }
 
-export async function setUserSessionCookie(session: UserSession): Promise<void> {
-  const cookieStore = await cookies()
+export async function setUserSessionCookie(
+  session: UserSession,
+): Promise<void> {
+  const cookieStore = await cookies();
   cookieStore.set({
     name: "user_session",
     value: JSON.stringify(session),
@@ -58,6 +60,5 @@ export async function setUserSessionCookie(session: UserSession): Promise<void> 
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
     maxAge: 60 * 60 * 24 * 7, // 1 week
-  })
+  });
 }
-

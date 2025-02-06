@@ -1,29 +1,28 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import type { UserSession } from "../../lib/session"
+import { useState, useEffect } from "react";
+import type { UserSession } from "../../lib/session";
 
 export function useUserSession() {
-  const [userSession, setUserSession] = useState<UserSession | null>(null)
+  const [userSession, setUserSession] = useState<UserSession | null>(null);
 
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const res = await fetch("/api/session")
+        const res = await fetch("/api/session");
         if (res.ok) {
-          const session = await res.json()
-          setUserSession(session)
+          const session = await res.json();
+          setUserSession(session);
         } else {
-          setUserSession(null)
+          setUserSession(null);
         }
       } catch (error) {
-        console.error("Error fetching user session:", error)
-        setUserSession(null)
+        console.error("Error fetching user session:", error);
+        setUserSession(null);
       }
-    }
-    fetchSession()
-  }, [])
+    };
+    fetchSession();
+  }, []);
 
-  return { userSession }
+  return { userSession };
 }
-

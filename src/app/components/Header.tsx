@@ -1,7 +1,7 @@
-import Link from "next/link"
-import { User } from "lucide-react"
-import SearchCombobox from "../../components/SearchCombobox"
-import ShoppingCart from "./ShoppingCart"
+import Link from "next/link";
+import { User } from "lucide-react";
+import SearchCombobox from "../../components/SearchCombobox";
+import ShoppingCart from "./ShoppingCart";
 
 export default function Header() {
   return (
@@ -30,6 +30,5 @@ export default function Header() {
         </nav>
       </div>
     </header>
-  )
+  );
 }
-

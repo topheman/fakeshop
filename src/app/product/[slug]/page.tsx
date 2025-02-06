@@ -1,16 +1,20 @@
-import Image from "next/image"
-import { getProduct } from "@/lib/api"
-import { Button } from "@/components/ui/button"
-import { extractProductIdFromSlug } from "../../../utils/slugUtils"
+import Image from "next/image";
+import { getProduct } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { extractProductIdFromSlug } from "../../../utils/slugUtils";
 
-export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
-  const productId = extractProductIdFromSlug(slug)
+  const productId = extractProductIdFromSlug(slug);
   if (productId === -1) {
     // Handle invalid slug
-    return <div>Invalid product URL</div>
+    return <div>Invalid product URL</div>;
   }
-  const product = await getProduct(productId)
+  const product = await getProduct(productId);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -25,13 +29,16 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-[#900000] mb-4">{product.title}</h1>
+          <h1 className="text-3xl font-bold text-[#900000] mb-4">
+            {product.title}
+          </h1>
           <p className="text-gray-600 mb-4">{product.description}</p>
-          <p className="text-2xl font-bold text-[#900000] mb-4">${product.price.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-[#900000] mb-4">
+            ${product.price.toFixed(2)}
+          </p>
           <Button className="bg-[#900000] text-white">Add to Cart</Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
-

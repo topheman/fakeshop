@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { ShoppingCartIcon } from "lucide-react"
-import { useUserSession } from "../hooks/useUserSession"
+import Link from "next/link";
+import { ShoppingCartIcon } from "lucide-react";
+import { useUserSession } from "../hooks/useUserSession";
 
 export default function ShoppingCart() {
-  const { userSession } = useUserSession()
+  const { userSession } = useUserSession();
 
   return (
     <Link href="/cart" className="relative hover:text-gray-300">
@@ -16,6 +16,5 @@ export default function ShoppingCart() {
         </span>
       )}
     </Link>
-  )
+  );
 }
-

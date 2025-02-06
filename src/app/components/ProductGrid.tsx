@@ -1,7 +1,7 @@
-import Image from "next/image"
-import Link from "next/link"
-import type { Product } from "../../lib/api"
-import { generateProductSlug } from "../../utils/slugUtils"
+import Image from "next/image";
+import Link from "next/link";
+import type { Product } from "../../lib/api";
+import { generateProductSlug } from "../../utils/slugUtils";
 
 export default function ProductGrid({ products }: { products: Product[] }) {
   return (
@@ -21,11 +21,14 @@ export default function ProductGrid({ products }: { products: Product[] }) {
               className="h-full w-full object-cover object-center"
             />
           </div>
-          <h2 className="mt-4 text-lg font-semibold text-gray-700">{product.title}</h2>
-          <p className="mt-1 text-lg font-medium text-gray-900">${product.price.toFixed(2)}</p>
+          <h2 className="mt-4 text-lg font-semibold text-gray-700">
+            {product.title}
+          </h2>
+          <p className="mt-1 text-lg font-medium text-gray-900">
+            ${product.price.toFixed(2)}
+          </p>
         </Link>
       ))}
     </div>
-  )
+  );
 }
-
