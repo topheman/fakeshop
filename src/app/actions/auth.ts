@@ -1,12 +1,15 @@
 "use server";
 
-import { createUserSession, setUserSessionCookie } from "../../lib/session";
+import {
+  createUserSession,
+  setUserSessionCookie,
+  UserSession,
+} from "../../lib/session";
 import { revalidatePath } from "next/cache";
 
-export async function handleFakeLogin(): Promise<{
-  success: boolean;
-  error?: string;
-}> {
+export async function handleFakeLogin(): Promise<
+  { session: UserSession } | { error: string }
+> {
   console.log("handleFakeLogin server side - Start", {
     env: process.env.NODE_ENV,
     time: new Date().toISOString(),
@@ -19,10 +22,10 @@ export async function handleFakeLogin(): Promise<{
     revalidatePath("/");
     console.log("Path revalidated");
     console.log("handleFakeLogin server side - End (Success)");
-    return { success: true };
+    return { session: newSession };
   } catch (error) {
     console.error("Error in handleFakeLogin:", error);
     console.log("handleFakeLogin server side - End (Error)");
-    return { success: false, error: "Failed to create session" };
+    return { error: "Failed to create session" };
   }
 }

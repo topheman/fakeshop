@@ -9,7 +9,7 @@ export default function FakeLogin({
   login,
   initialSession,
 }: {
-  login: () => Promise<{ success: boolean; error?: string }>;
+  login: () => Promise<{ session: UserSession } | { error: string }>;
   initialSession: UserSession | null;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -20,9 +20,17 @@ export default function FakeLogin({
 
   if (session) {
     return (
-      <p className="text-green-600 font-semibold">
-        You are logged in as {session.infos.firstName} {session.infos.lastName}
-      </p>
+      <>
+        <p className="text-green-600 font-semibold">
+          You are logged in as {session.infos.firstName}{" "}
+          {session.infos.lastName}
+        </p>
+        <p>
+          <Button className="bg-primary text-white text-lg py-3 px-6 hover:bg-primary/90">
+            Logout - todo
+          </Button>
+        </p>
+      </>
     );
   }
 
@@ -33,7 +41,16 @@ export default function FakeLogin({
         user session for demonstration purposes.
       </p>
       <Button
-        onClick={() => startTransition(login)}
+        onClick={() =>
+          startTransition(async () => {
+            const result = await login();
+            if (!("session" in result)) {
+              setError(result.error || "Login failed");
+            } else {
+              setSession(result.session);
+            }
+          })
+        }
         className="bg-primary text-white text-lg py-3 px-6 hover:bg-primary/90"
         disabled={isPending}
       >
