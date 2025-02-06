@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { searchProducts } from "../../lib/api"
+import { searchProducts } from "../lib/api"
 import ProductGrid from "../app/components/ProductGrid"
 import type { Product } from "../../types"
 
