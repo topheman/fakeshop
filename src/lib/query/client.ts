@@ -1,4 +1,8 @@
-import { QueryClient, QueryClientConfig } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientConfig,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 
 export function makeQueryClient(options: QueryClientConfig = {}) {
   return new QueryClient({
@@ -13,3 +17,20 @@ export function makeQueryClient(options: QueryClientConfig = {}) {
     },
   });
 }
+
+/**
+ * A type that will let you add react-query specific options to your custom hooks
+ * will still keeping the type inference for the queryFn, without being bothered by
+ * TypeScript yelling about the queryKey and queryFn.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type MyUseQueryOptions<TQueryFnData extends (...args: any) => any> =
+  Omit<
+    UseQueryOptions<
+      unknown,
+      Error,
+      Awaited<ReturnType<TQueryFnData>>,
+      readonly unknown[]
+    >,
+    "queryKey" | "queryFn"
+  >;

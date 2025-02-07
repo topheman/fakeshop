@@ -41,9 +41,12 @@ export const getProducts = cache(
 );
 
 export const searchProducts = cache(
-  async (query: string): Promise<SearchResult> => {
+  async (
+    query: string,
+    { limit = 5 }: { limit?: number } = {},
+  ): Promise<SearchResult> => {
     return fetchApi<SearchResult>(
-      `/products/search?q=${encodeURIComponent(query)}`,
+      `/products/search?q=${encodeURIComponent(query)}&limit=${limit}`,
     );
   },
 );

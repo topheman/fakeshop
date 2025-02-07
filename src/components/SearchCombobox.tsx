@@ -1,44 +1,36 @@
 "use client";
 
-import { useState, useEffect, useCallback, useTransition } from "react";
+import { useState, useCallback } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search } from "lucide-react";
-import { searchProducts } from "../lib/api";
 import type { Product } from "../types";
 import Image from "next/image";
 import { Combobox } from "@headlessui/react";
 import { generateProductSlug } from "../utils/slugUtils";
+import { useSearchProducts } from "@/hooks/products";
 
 export default function SearchCombobox({ initialQuery = "" }) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [query, setQuery] = useState(initialQuery);
-  const [suggestions, setSuggestions] = useState<Product[]>([]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
+
+  // Use react-query hook for search
+  const { data } = useSearchProducts(
+    { query },
+    { enabled: !!query, networkMode: "always" },
+  );
+  const suggestions = data?.products ?? [];
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams);
       params.set(name, value);
-
       return params.toString();
     },
     [searchParams],
   );
-
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (query) {
-        const results = await searchProducts(query);
-        setSuggestions(results.products.slice(0, 5));
-      } else {
-        setSuggestions([]);
-      }
-    };
-    fetchSuggestions();
-  }, [query]);
 
   const handleChange = (value: Product | string | null) => {
     if (value === null) {
@@ -47,14 +39,12 @@ export default function SearchCombobox({ initialQuery = "" }) {
 
     if (typeof value === "string") {
       // Handle custom search query
-      startTransition(() => {
-        if (pathname === "/search") {
-          // If already on search page, update the URL without navigation
-          router.push("/search?" + createQueryString("q", value));
-        } else {
-          router.push(`/search?q=${encodeURIComponent(value)}`);
-        }
-      });
+      if (pathname === "/search") {
+        // If already on search page, update the URL without navigation
+        router.push("/search?" + createQueryString("q", value));
+      } else {
+        router.push(`/search?q=${encodeURIComponent(value)}`);
+      }
     } else {
       // Handle product selection
       setSelectedProduct(value);
@@ -62,7 +52,6 @@ export default function SearchCombobox({ initialQuery = "" }) {
       router.push(`/product/${slug}`);
     }
     setQuery("");
-    setSuggestions([]);
   };
 
   return (
@@ -71,7 +60,7 @@ export default function SearchCombobox({ initialQuery = "" }) {
         <div className="relative">
           <Combobox.Input
             className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 bg-white rounded-lg focus:ring-0 focus:outline-none"
-            displayValue={(item: Product | null) => query}
+            displayValue={() => query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search products..."
           />
