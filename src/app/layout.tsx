@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import type React from "react";
+import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,15 +18,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // You can add async operations here if needed in the future
-  // For example: const someData = await fetchSomeData();
-
   return (
     <html lang="en">
       <body className={`${inter.className} flex flex-col min-h-screen`}>
-        <Header />
-        <main className="flex-grow bg-background">{children}</main>
-        <Footer />
+        <Providers>
+          <Header />
+          <main className="flex-grow bg-background">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
