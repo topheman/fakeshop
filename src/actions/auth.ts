@@ -5,7 +5,7 @@ import {
   createUserSession,
   setUserSessionCookie,
   UserSession,
-} from "../../lib/session";
+} from "../lib/session";
 import { revalidatePath } from "next/cache";
 
 export async function login(): Promise<

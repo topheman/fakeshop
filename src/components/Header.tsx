@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { User } from "lucide-react";
-import SearchCombobox from "../../components/SearchCombobox";
+import SearchCombobox from "./SearchCombobox";
 import ShoppingCart from "./ShoppingCart";
 import { Suspense } from "react";
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { searchProducts } from "../lib/api";
-import ProductGrid from "../app/components/ProductGrid";
+import ProductGrid from "./ProductGrid";
 import type { Product } from "../../types";
 
 export default function SearchResults({

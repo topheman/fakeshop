@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Product } from "../../lib/api";
-import { generateProductSlug } from "../../utils/slugUtils";
+import type { Product } from "../lib/api";
+import { generateProductSlug } from "../utils/slugUtils";
 
 export default function ProductGrid({ products }: { products: Product[] }) {
   return (
