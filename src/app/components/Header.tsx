@@ -2,6 +2,7 @@ import Link from "next/link";
 import { User } from "lucide-react";
 import SearchCombobox from "../../components/SearchCombobox";
 import ShoppingCart from "./ShoppingCart";
+import { Suspense } from "react";
 
 export default function Header() {
   return (
@@ -10,7 +11,9 @@ export default function Header() {
         <Link href="/" className="text-2xl font-bold">
           FakeStore
         </Link>
-        <SearchCombobox />
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchCombobox />
+        </Suspense>
         <nav>
           <ul className="flex space-x-4">
             <li>

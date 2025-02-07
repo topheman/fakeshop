@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { searchProducts } from "../lib/api";
 import ProductGrid from "../app/components/ProductGrid";
 import type { Product } from "../../types";
@@ -13,7 +13,6 @@ export default function SearchResults({
 }) {
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const query = searchParams.get("q") || initialQuery;

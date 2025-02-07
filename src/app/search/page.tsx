@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import SearchResults from "../../components/SearchResults";
 
 export default async function SearchPage({
@@ -14,9 +13,7 @@ export default async function SearchPage({
       <h1 className="text-3xl font-bold text-primary mb-4">
         {query ? `Search Results for "${query}"` : "Search Products"}
       </h1>
-      <Suspense fallback={<div>Loading...</div>}>
-        <SearchResults query={query} />
-      </Suspense>
+      <SearchResults query={query} />
     </div>
   );
 }
