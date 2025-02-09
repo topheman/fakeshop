@@ -27,7 +27,9 @@ export default function Header() {
               </Link>
             </li>
             <li>
-              <ShoppingCart />
+              <Suspense fallback={<div>Loading...</div>}>
+                <ShoppingCart />
+              </Suspense>
             </li>
           </ul>
         </nav>
