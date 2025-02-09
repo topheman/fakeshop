@@ -4,9 +4,14 @@ import {
   clearUserSessionCookie,
   createUserSession,
   setUserSessionCookie,
+  getUserSession as getUserSessionFromLib,
   UserSession,
 } from "../lib/session";
 import { revalidatePath } from "next/cache";
+
+export async function getUserSession(): Promise<UserSession | null> {
+  return getUserSessionFromLib();
+}
 
 export async function login(): Promise<
   { session: UserSession } | { error: string }
