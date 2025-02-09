@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "scan": "NEXT_PUBLIC_ENABLE_SCAN=true npm run dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
