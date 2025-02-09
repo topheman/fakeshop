@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ShoppingCartIcon } from "lucide-react";
-import { useUserSession } from "../hooks/useUserSession";
+import { useUserSession } from "../hooks/session";
 
 export default function ShoppingCart() {
   const { userSession } = useUserSession();
