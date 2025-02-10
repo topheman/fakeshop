@@ -1,11 +1,6 @@
-import { getUserSession } from "../lib/session";
 import FakeLogin from "../components/FakeLogin";
-import { login, logout } from "../actions/auth";
 
-export default async function Home() {
-  const session = await getUserSession();
-  console.log("Home page - Session:", session ? "exists" : "null");
-
+export default function Home() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-primary mb-4">
@@ -22,7 +17,7 @@ export default async function Home() {
         applications using the latest technologies.
       </p>
       <div className="text-center">
-        <FakeLogin login={login} logout={logout} initialSession={session} />
+        <FakeLogin />
       </div>
     </div>
   );

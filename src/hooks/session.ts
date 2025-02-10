@@ -1,7 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { getUserSession } from "../actions/auth";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getUserSession, login, logout } from "../actions/auth";
 
 export function useUserSession() {
   const {
@@ -18,4 +18,26 @@ export function useUserSession() {
     isLoading,
     error,
   };
+}
+
+export function useLogin() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: login,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userSession"] });
+    },
+  });
+}
+
+export function useLogout() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userSession"] });
+    },
+  });
 }
