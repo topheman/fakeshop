@@ -2,38 +2,44 @@
 
 import {
   clearUserSessionCookie,
-  createUserSession,
   setUserSessionCookie,
   getUserSession as getUserSessionFromLib,
-  UserSession,
 } from "../lib/session";
+import { createUserSession } from "../lib/sessionUtils";
 import { revalidatePath } from "next/cache";
+import type { UserSession } from "../lib/types";
+import { redirect } from "next/navigation";
+import { isIssuedByJS } from "@/utils/actions";
 
 export async function getUserSession(): Promise<UserSession | null> {
   return getUserSessionFromLib();
 }
 
-export async function login(): Promise<
-  { session: UserSession } | { error: string }
-> {
+export async function login(formData: FormData): Promise<void> {
+  console.log("login", formData);
   try {
     const newSession = createUserSession();
     await setUserSessionCookie(newSession);
     revalidatePath("/");
-    return { session: newSession };
   } catch (error) {
     console.error("Error in login:", error);
-    return { error: "Failed to create session" };
+    throw new Error("Failed to create session");
+  }
+  if (!(await isIssuedByJS())) {
+    redirect("/");
   }
 }
 
-export async function logout(): Promise<{ session: null } | { error: string }> {
+export async function logout(formData: FormData): Promise<void> {
+  console.log("logout", formData);
   try {
     await clearUserSessionCookie();
     revalidatePath("/");
-    return { session: null };
   } catch (error) {
     console.error("Error in logout:", error);
-    return { error: "Failed to clear session" };
+    throw new Error("Failed to clear session");
+  }
+  if (!(await isIssuedByJS())) {
+    redirect("/");
   }
 }

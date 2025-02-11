@@ -1,26 +1,12 @@
-import { cookies } from "next/headers";
-import { faker } from "@faker-js/faker";
+"use server";
 
-export interface UserSession {
-  infos: {
-    firstName: string;
-    lastName: string;
-    address: string;
-    country: string;
-    phoneNumber: string;
-    email: string;
-  };
-  cart: {
-    items: Array<{
-      id: number;
-      quantity: number;
-    }>;
-  };
-}
+import { cookies } from "next/headers";
+import type { UserSession } from "./types";
 
 export async function getUserSession(): Promise<UserSession | null> {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("user_session");
+  console.log("getUserSession", sessionCookie);
   if (sessionCookie) {
     try {
       return JSON.parse(sessionCookie.value);
@@ -29,24 +15,6 @@ export async function getUserSession(): Promise<UserSession | null> {
     }
   }
   return null;
-}
-
-export function createUserSession(): UserSession {
-  const session: UserSession = {
-    infos: {
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      address: faker.location.streetAddress(),
-      country: faker.location.country(),
-      phoneNumber: faker.phone.number(),
-      email: faker.internet.email(),
-    },
-    cart: {
-      items: [],
-    },
-  };
-
-  return session;
 }
 
 export async function setUserSessionCookie(
