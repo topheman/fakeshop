@@ -1,12 +1,13 @@
-import Link from "next/link";
 import { User } from "lucide-react";
+import Link from "next/link";
+import { Suspense } from "react";
+
 import SearchCombobox from "./SearchCombobox";
 import ShoppingCart from "./ShoppingCart";
-import { Suspense } from "react";
 
 export default function Header() {
   return (
-    <header className="bg-[#900000] text-white p-4">
+    <header className="bg-primary p-4 text-white">
       <div className="container mx-auto flex items-center justify-between">
         <Link href="/" className="text-2xl font-bold">
           FakeStore

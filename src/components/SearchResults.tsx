@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { searchProducts } from "../lib/api";
-import ProductGrid from "./ProductGrid";
+import { useEffect, useState } from "react";
+
 import type { Product } from "../../types";
+import { searchProducts } from "../lib/api";
+
+import ProductGrid from "./ProductGrid";
 
 export default function SearchResults({
   query: initialQuery,

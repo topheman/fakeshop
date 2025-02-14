@@ -10,7 +10,7 @@ export default async function SearchPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-primary mb-4">
+      <h1 className="mb-4 text-3xl font-bold text-primary">
         {query ? `Search Results for "${query}"` : "Search Products"}
       </h1>
       <SearchResults query={query} />

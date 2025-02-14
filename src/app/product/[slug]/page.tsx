@@ -1,6 +1,8 @@
 import Image from "next/image";
-import { getProduct } from "@/lib/api";
+
 import { Button } from "@/components/ui/button";
+import { getProduct } from "@/lib/api";
+
 import { extractProductIdFromSlug } from "../../../utils/slugUtils";
 
 export default async function ProductPage({
@@ -18,25 +20,25 @@ export default async function ProductPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div>
           <Image
             src={product.thumbnail || "/placeholder.svg"}
             alt={product.title}
             width={500}
             height={500}
-            className="w-full h-auto object-cover rounded-lg"
+            className="h-auto w-full rounded-lg object-cover"
           />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-[#900000] mb-4">
+          <h1 className="mb-4 text-3xl font-bold text-primary">
             {product.title}
           </h1>
-          <p className="text-gray-600 mb-4">{product.description}</p>
-          <p className="text-2xl font-bold text-[#900000] mb-4">
+          <p className="mb-4 text-gray-600">{product.description}</p>
+          <p className="mb-4 text-2xl font-bold text-primary">
             ${product.price.toFixed(2)}
           </p>
-          <Button className="bg-[#900000] text-white">Add to Cart</Button>
+          <Button className="bg-primary text-white">Add to Cart</Button>
         </div>
       </div>
     </div>

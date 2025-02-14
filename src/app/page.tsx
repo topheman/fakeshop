@@ -1,14 +1,14 @@
 "use server";
 
-import { getUserSession } from "../lib/session";
 import FakeLogin from "../components/FakeLogin";
+import { getUserSession } from "../lib/session";
 
 export default async function Home() {
   const session = await getUserSession();
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-primary mb-4">
+      <h1 className="mb-4 text-4xl font-bold text-primary">
         Welcome to FakeStore
       </h1>
       <p className="mb-4">

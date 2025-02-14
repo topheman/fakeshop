@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+
 import type { UserSession } from "./types";
 
 export function createUserSession(): UserSession {

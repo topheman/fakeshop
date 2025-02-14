@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Search } from "lucide-react";
-import type { Product } from "../types";
-import Image from "next/image";
 import { Combobox } from "@headlessui/react";
-import { generateProductSlug } from "../utils/slugUtils";
+import { Search } from "lucide-react";
+import Image from "next/image";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useState, useCallback } from "react";
+
 import { useSearchProducts } from "@/hooks/products";
+
+import type { Product } from "../types";
+import { generateProductSlug } from "../utils/slugUtils";
 
 export default function SearchCombobox({ initialQuery = "" }) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -55,21 +57,21 @@ export default function SearchCombobox({ initialQuery = "" }) {
   };
 
   return (
-    <div className="relative flex-grow max-w-md mx-4">
+    <div className="relative mx-4 max-w-md grow">
       <Combobox value={selectedProduct} onChange={handleChange} nullable>
         <div className="relative">
           <Combobox.Input
-            className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 bg-white rounded-lg focus:ring-0 focus:outline-none"
+            className="w-full rounded-lg border-none bg-white py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:outline-none focus:ring-0"
             displayValue={() => query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search products..."
           />
           <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-            <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <Search className="size-5 text-gray-400" aria-hidden="true" />
           </Combobox.Button>
         </div>
         {query !== "" && (
-          <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+          <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
             <Combobox.Option
               value={query}
               className={({ active }) =>
@@ -107,10 +109,10 @@ export default function SearchCombobox({ initialQuery = "" }) {
                     {selected ? (
                       <span
                         className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                          active ? "text-white" : "text-[#900000]"
+                          active ? "text-white" : "text-primary"
                         }`}
                       >
-                        <Search className="h-5 w-5" aria-hidden="true" />
+                        <Search className="size-5" aria-hidden="true" />
                       </span>
                     ) : null}
                   </>

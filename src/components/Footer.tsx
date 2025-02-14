@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-100 text-[#900000] p-4">
+    <footer className="bg-gray-100 p-4 text-primary">
       <div className="container mx-auto text-center">
         <p>&copy; 2025 - Christophe Rosset</p>
         <div className="mt-2 space-x-4">
