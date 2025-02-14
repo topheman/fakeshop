@@ -2,12 +2,15 @@
   "extends": [
     "plugin:prettier/recommended",
     "next/core-web-vitals",
-    "next/typescript"
+    "next/typescript",
+    "plugin:tailwindcss/recommended"
   ],
   "plugins": [
-    "import"
+    "import",
+    "tailwindcss"
   ],
   "rules": {
+    "tailwindcss/no-custom-classname": "off",
     "import/order": [
       "error",
       {
