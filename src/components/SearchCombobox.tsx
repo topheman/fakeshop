@@ -62,7 +62,7 @@ export default function SearchCombobox({ initialQuery = "" }) {
         <Combobox value={selectedProduct} onChange={handleChange} nullable>
           <div className="relative">
             <Combobox.Input
-              className="w-full rounded-lg border-none bg-white py-2 pl-3 pr-10 text-[16px] leading-5 text-gray-900 focus:outline-none focus:ring-0 sm:text-sm"
+              className="w-full rounded-lg border-none bg-white py-2 pl-3 pr-10 text-[16px] leading-5 text-gray-900 focus:outline-none focus:ring-0 sm:text-sm md:min-w-[400px]"
               displayValue={() => query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search products..."
