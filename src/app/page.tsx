@@ -12,14 +12,12 @@ export default async function Home() {
         Welcome to FakeStore
       </h1>
       <p className="mb-4">
-        FakeStore is a demo e-commerce website built with Next.js 15, showcasing
-        modern web development practices. It's designed to demonstrate the power
-        of React Server Components, streaming, and progressive enhancement.
+        FakeStore is a demo e-commerce website built with Next.js 15, where I
+        test the latest features of the framework, like React Server Components,
+        server actions, streaming, and progressive enhancement.
       </p>
-      <p className="mb-8">
-        This project is open-source and serves as an educational resource for
-        developers interested in building high-performance, scalable web
-        applications using the latest technologies.
+      <p className="mb-4">
+        The button below will let you login as a fake user.
       </p>
       <div className="text-center">
         <FakeLogin initialSession={session} />

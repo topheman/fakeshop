@@ -1,47 +1,23 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-
-import type { Product } from "../../types";
 import { searchProducts } from "../lib/api";
+import { Product } from "../types";
 
 import ProductGrid from "./ProductGrid";
 
-export default function SearchResults({
+export default async function SearchResults({
   query: initialQuery,
 }: {
   query: string;
 }) {
-  const [results, setResults] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
-  const searchParams = useSearchParams();
+  let results: Product[] = [];
+  const query = initialQuery;
 
-  const query = searchParams.get("q") || initialQuery;
-
-  useEffect(() => {
-    const fetchResults = async () => {
-      if (query) {
-        setLoading(true);
-        try {
-          const searchResults = await searchProducts(query);
-          setResults(searchResults.products);
-        } catch (error) {
-          console.error("Error fetching search results:", error);
-          setResults([]);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setResults([]);
-      }
-    };
-
-    fetchResults();
-  }, [query]);
-
-  if (loading) {
-    return <div>Loading...</div>;
+  if (query) {
+    try {
+      const searchResults = await searchProducts(query);
+      results = searchResults.products;
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    }
   }
 
   return (
