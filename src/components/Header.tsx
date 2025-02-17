@@ -18,11 +18,6 @@ export default function Header() {
         <nav>
           <ul className="flex space-x-4">
             <li>
-              <Link href="/categories" className="hover:text-gray-300">
-                Categories
-              </Link>
-            </li>
-            <li>
               <Link href="/account" className="hover:text-gray-300">
                 <User />
               </Link>
