@@ -10,7 +10,7 @@ export default function Header() {
     <header className="bg-primary p-4 text-white">
       <div className="container mx-auto flex items-center justify-between">
         <Link href="/" className="text-2xl font-bold">
-          FakeStore
+          FakeShop
         </Link>
         <Suspense fallback={<div>Loading...</div>}>
           <SearchCombobox />

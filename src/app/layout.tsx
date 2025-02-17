@@ -12,7 +12,7 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FakeStore",
+  title: "FakeShop",
   description: "A demo e-commerce site built with Next.js 15",
 };
 
