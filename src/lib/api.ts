@@ -23,6 +23,12 @@ export interface SearchResult {
   limit: number;
 }
 
+export interface Category {
+  slug: string;
+  name: string;
+  url: string;
+}
+
 async function fetchApi<T>(
   endpoint: string,
   options?: RequestInit,
@@ -33,6 +39,16 @@ async function fetchApi<T>(
   }
   return res.json();
 }
+
+export const getCategories = cache(
+  async (): Promise<{ slug: string; name: string }[]> => {
+    const categories = await fetchApi<Category[]>("/products/categories");
+    return categories.map(({ slug, name }) => ({
+      slug,
+      name,
+    }));
+  },
+);
 
 export const getProducts = cache(
   async (limit = 10, skip = 0): Promise<SearchResult> => {

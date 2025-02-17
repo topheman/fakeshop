@@ -1,5 +1,6 @@
 "use server";
 
+import CategoryList from "../components/CategoryList";
 import FakeLogin from "../components/FakeLogin";
 import { getUserSession } from "../lib/session";
 
@@ -22,6 +23,7 @@ export default async function Home() {
       <div className="text-center">
         <FakeLogin initialSession={session} />
       </div>
+      <CategoryList />
     </div>
   );
 }
