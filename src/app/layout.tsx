@@ -40,7 +40,9 @@ export default async function RootLayout({
       <body className={`${inter.className} flex min-h-screen flex-col`}>
         <Providers>
           <Header />
-          <main className="grow bg-background">{children}</main>
+          <main className="mx-auto max-w-screen-xl grow bg-background">
+            {children}
+          </main>
           <Footer />
         </Providers>
       </body>
