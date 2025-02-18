@@ -70,3 +70,11 @@ export const searchProducts = cache(
 export const getProduct = cache(async (id: number): Promise<Product> => {
   return fetchApi<Product>(`/products/${id}`);
 });
+
+export const getProductsByCategory = cache(
+  async (category: string, limit = 10, skip = 0): Promise<SearchResult> => {
+    return fetchApi<SearchResult>(
+      `/products/category/${encodeURIComponent(category)}?limit=${limit}&skip=${skip}`,
+    );
+  },
+);

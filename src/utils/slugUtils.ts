@@ -17,3 +17,11 @@ export function extractProductIdFromSlug(slug: string): number {
   const id = Number.parseInt(parts[parts.length - 1], 10);
   return isNaN(id) ? -1 : id;
 }
+
+export function slugToDisplayName(slug: string): string {
+  // Replace hyphens with spaces and capitalize each word
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
