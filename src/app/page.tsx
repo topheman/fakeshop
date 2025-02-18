@@ -1,12 +1,7 @@
-"use server";
-
-import { getUserInfos } from "../actions/session";
 import CategoryList from "../components/CategoryList";
 import FakeLogin from "../components/FakeLogin";
 
-export default async function Home() {
-  const session = await getUserInfos();
-
+export default function Home() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-4 text-4xl font-bold text-primary">
@@ -21,7 +16,7 @@ export default async function Home() {
         The button below will let you login as a fake user.
       </p>
       <div className="text-center">
-        <FakeLogin initialSession={session} />
+        <FakeLogin />
       </div>
       <CategoryList />
     </div>
