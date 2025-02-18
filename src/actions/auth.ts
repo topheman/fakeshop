@@ -5,23 +5,25 @@ import { redirect } from "next/navigation";
 
 import { isIssuedByJS } from "@/utils/actions";
 
-import {
-  clearUserSessionCookie,
-  setUserSessionCookie,
-  getUserSession as getUserSessionFromLib,
-} from "../lib/session";
-import { createUserSession } from "../lib/sessionUtils";
-import type { UserSession } from "../lib/types";
+import { clearUserInfos, setUserInfos, getUserInfos, getCart } from "./session";
+import { createUserInfos } from "./sessionUtils";
+import type { Cart, UserInfos } from "./types";
 
-export async function getUserSession(): Promise<UserSession | null> {
-  return getUserSessionFromLib();
+export async function getUserSession(): Promise<{
+  infos: UserInfos | null;
+  cart: Cart | null;
+}> {
+  return {
+    infos: await getUserInfos(),
+    cart: await getCart(),
+  };
 }
 
 export async function login(formData: FormData): Promise<void> {
   console.log("login", formData);
   try {
-    const newSession = createUserSession();
-    await setUserSessionCookie(newSession);
+    const newSession = createUserInfos();
+    await setUserInfos(newSession);
     revalidatePath("/");
   } catch (error) {
     console.error("Error in login:", error);
@@ -35,7 +37,7 @@ export async function login(formData: FormData): Promise<void> {
 export async function logout(formData: FormData): Promise<void> {
   console.log("logout", formData);
   try {
-    await clearUserSessionCookie();
+    await clearUserInfos();
     revalidatePath("/");
   } catch (error) {
     console.error("Error in logout:", error);

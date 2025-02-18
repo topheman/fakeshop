@@ -1,17 +1,17 @@
 import { ShoppingCartIcon } from "lucide-react";
 import Link from "next/link";
 
-import { getUserSession } from "../actions/auth";
+import { getCart } from "../actions/session";
 
 export default async function ShoppingCart() {
-  const session = await getUserSession();
+  const cart = await getCart();
 
   return (
     <Link href="/cart" className="relative hover:text-gray-300">
-      <ShoppingCartIcon className={session ? "text-green-300" : ""} />
-      {session && session.cart && session.cart.items.length > 0 && (
+      <ShoppingCartIcon className={cart ? "text-green-300" : ""} />
+      {cart && cart.items.length > 0 && (
         <span className="absolute -right-2 -top-2 flex size-5 items-center justify-center rounded-full bg-yellow-400 text-xs text-black">
-          {session.cart.items.reduce((acc, item) => acc + item.quantity, 0)}
+          {cart.items.reduce((acc, item) => acc + item.quantity, 0)}
         </span>
       )}
     </Link>

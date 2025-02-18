@@ -1,21 +1,21 @@
 "use client";
 
 import { login, logout } from "../actions/auth";
-import type { UserSession } from "../lib/types";
+import type { UserInfos } from "../actions/types";
 
 import { Button } from "./ui/button";
 
 export default function FakeLogin({
   initialSession,
 }: {
-  initialSession: UserSession | null;
+  initialSession: UserInfos | null;
 }) {
   if (initialSession) {
     return (
       <>
         <p className="mb-4 font-semibold text-green-600">
-          You are logged in as {initialSession.infos.firstName}{" "}
-          {initialSession.infos.lastName}
+          You are logged in as {initialSession.firstName}{" "}
+          {initialSession.lastName}
         </p>
         <form action={logout}>
           <Button

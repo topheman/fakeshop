@@ -1,11 +1,11 @@
 "use server";
 
+import { getUserInfos } from "../actions/session";
 import CategoryList from "../components/CategoryList";
 import FakeLogin from "../components/FakeLogin";
-import { getUserSession } from "../lib/session";
 
 export default async function Home() {
-  const session = await getUserSession();
+  const session = await getUserInfos();
 
   return (
     <div className="container mx-auto px-4 py-8">
