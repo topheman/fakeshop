@@ -1,9 +1,9 @@
-import { User } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
 import SearchCombobox from "./SearchCombobox";
 import ShoppingCart from "./ShoppingCart";
+import UserIcon from "./UserIcon";
 
 export default function Header() {
   return (
@@ -18,9 +18,9 @@ export default function Header() {
         <nav>
           <ul className="flex space-x-4">
             <li>
-              <Link href="/account" className="hover:text-gray-300">
-                <User />
-              </Link>
+              <Suspense fallback={<div>Loading...</div>}>
+                <UserIcon />
+              </Suspense>
             </li>
             <li>
               <Suspense fallback={<div>Loading...</div>}>
