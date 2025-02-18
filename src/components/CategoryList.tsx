@@ -17,6 +17,7 @@ export default async function CategoryList() {
             href={`/category/${category.slug}`}
             className="flex flex-col items-center rounded-lg border p-4 transition-colors hover:bg-gray-50"
             title={category.name}
+            prefetch={false}
           >
             <CategoryIcon
               category={category.slug}
