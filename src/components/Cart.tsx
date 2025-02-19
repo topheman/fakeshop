@@ -29,7 +29,7 @@ export function Cart() {
   const updateCart = useUpdateCart();
   const queryClient = useQueryClient();
 
-  async function handleUpdateCart(id: number, quantity: number) {
+  async function handleUpdateCart(id: number, quantity: number | null) {
     if (cart) {
       const optimisticCart = prepareCart({ cart, id, quantity });
       queryClient.setQueryData(["cart"], optimisticCart);
@@ -115,7 +115,12 @@ export function Cart() {
                         </span>
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="size-8">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      onClick={() => handleUpdateCart(product.id, null)}
+                    >
                       <X className="size-4" />
                     </Button>
                   </div>
