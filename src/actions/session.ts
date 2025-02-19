@@ -65,7 +65,7 @@ export async function setCart(cart: Cart): Promise<void> {
  * @param quantity - The quantity of the product to add
  * If quantity is null, the item will be removed from the cart
  */
-export async function addToCart({
+export async function updateCart({
   id,
   quantity,
 }: {
@@ -80,9 +80,9 @@ export async function addToCart({
     } else {
       const existingItem = cart.items.find((item) => item.id === id);
       if (existingItem) {
-        existingItem.quantity += quantity;
+        existingItem.quantity = quantity;
       } else {
-        cart.items.push({ id: id, quantity });
+        cart.items.push({ id, quantity });
       }
     }
     await setCart(cart);
