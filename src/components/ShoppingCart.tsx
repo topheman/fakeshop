@@ -14,9 +14,9 @@ export default function ShoppingCart() {
       className="relative hover:text-gray-300"
       onClick={() => setIsOpen(true)}
     >
-      <ShoppingCartIcon className={cart ? "text-green-300" : ""} />
+      <ShoppingCartIcon strokeWidth={cart ? 2.8 : 2} />
       {cart.data && cart.data.items.length > 0 && (
-        <span className="absolute -right-2 -top-2 flex size-5 items-center justify-center rounded-full bg-yellow-400 text-xs text-black">
+        <span className="absolute -right-3 -top-3 flex size-6 items-center justify-center rounded-full bg-white text-xs text-black">
           {cart.data.items.reduce((acc, item) => acc + item.quantity, 0)}
         </span>
       )}
