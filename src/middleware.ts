@@ -20,6 +20,30 @@ export function middleware(request: NextRequest) {
             id: 2,
             quantity: 1,
           },
+          {
+            id: 3,
+            quantity: 3,
+          },
+          {
+            id: 4,
+            quantity: 4,
+          },
+          {
+            id: 5,
+            quantity: 5,
+          },
+          {
+            id: 6,
+            quantity: 6,
+          },
+          {
+            id: 7,
+            quantity: 7,
+          },
+          {
+            id: 8,
+            quantity: 8,
+          },
         ],
       }),
       httpOnly: true,
