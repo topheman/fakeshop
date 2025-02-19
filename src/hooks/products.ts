@@ -42,12 +42,17 @@ export function useProduct(
   });
 }
 
-export function useProductsByIds(ids: number[]) {
-  return useQueries({
-    queries: ids.map((id) => ({
-      queryKey: ["product", id],
-      queryFn: () => getProduct(id),
-      enabled: !!id,
-    })),
+export function useProductsByIds(
+  ids: number[],
+  options?: MyUseQueryOptions<typeof getProduct>,
+) {
+  const queries = ids.map((id) => ({
+    queryKey: ["product", id] as const,
+    queryFn: () => getProduct(id),
+    enabled: !!id,
+    ...options,
+  }));
+  return useQueries<typeof queries>({
+    queries,
   });
 }
