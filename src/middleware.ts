@@ -9,7 +9,19 @@ export function middleware(request: NextRequest) {
     // Set empty cart cookie
     response.cookies.set({
       name: "cart",
-      value: JSON.stringify({ items: [] }),
+      value: JSON.stringify({
+        // temporary adding 2 items to the cart
+        items: [
+          {
+            productId: 1,
+            quantity: 1,
+          },
+          {
+            productId: 2,
+            quantity: 1,
+          },
+        ],
+      }),
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
