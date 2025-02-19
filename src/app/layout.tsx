@@ -4,6 +4,8 @@ import "./globals.css";
 import Script from "next/script";
 import type React from "react";
 
+import { Cart } from "@/components/Cart";
+
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 
@@ -57,6 +59,7 @@ export default function RootLayout({
       <body className={`${inter.className} flex min-h-screen flex-col`}>
         <Providers>
           <Header />
+          <Cart />
           <main className="mx-auto max-w-screen-xl grow bg-background">
             {children}
           </main>

@@ -1,19 +1,25 @@
+"use client";
+
 import { ShoppingCartIcon } from "lucide-react";
-import Link from "next/link";
 
-import { getCart } from "../actions/session";
+import { useCart, useCartDisplay } from "@/hooks/cart";
 
-export default async function ShoppingCart() {
-  const cart = await getCart();
+export default function ShoppingCart() {
+  const cart = useCart();
+  const { setIsOpen } = useCartDisplay();
 
   return (
-    <Link href="/cart" className="relative hover:text-gray-300">
+    <button
+      type="button"
+      className="relative hover:text-gray-300"
+      onClick={() => setIsOpen(true)}
+    >
       <ShoppingCartIcon className={cart ? "text-green-300" : ""} />
-      {cart && cart.items.length > 0 && (
+      {cart.data && cart.data.items.length > 0 && (
         <span className="absolute -right-2 -top-2 flex size-5 items-center justify-center rounded-full bg-yellow-400 text-xs text-black">
-          {cart.items.reduce((acc, item) => acc + item.quantity, 0)}
+          {cart.data.items.reduce((acc, item) => acc + item.quantity, 0)}
         </span>
       )}
-    </Link>
+    </button>
   );
 }

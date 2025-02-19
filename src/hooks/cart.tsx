@@ -26,7 +26,7 @@ export function useCartDisplay() {
   return useContext(CartContext);
 }
 
-export function useCart(options: MyUseQueryOptions<typeof getCart>) {
+export function useCart(options?: MyUseQueryOptions<typeof getCart>) {
   return useQuery({
     queryKey: ["cart"],
     queryFn: () => getCart(),
@@ -34,7 +34,7 @@ export function useCart(options: MyUseQueryOptions<typeof getCart>) {
   });
 }
 
-export function useAddToCart(options: MyUseMutationOptions<typeof addToCart>) {
+export function useAddToCart(options?: MyUseMutationOptions<typeof addToCart>) {
   return useMutation({
     mutationKey: ["addToCart"],
     mutationFn: ({ productId, quantity }) => addToCart({ productId, quantity }),
