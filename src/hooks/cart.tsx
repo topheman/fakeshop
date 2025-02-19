@@ -39,6 +39,7 @@ export function useUpdateCart(
 ) {
   return useMutation({
     mutationKey: ["updateCart"],
+    // server action can't be aborted 🥲 - https://github.com/facebook/react/issues/28511
     mutationFn: ({ id, quantity }) => updateCart({ id, quantity }),
     ...options,
   });

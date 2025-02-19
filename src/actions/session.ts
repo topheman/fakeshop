@@ -2,6 +2,8 @@
 
 import { cookies } from "next/headers";
 
+import { prepareCart } from "@/utils/cart";
+
 import type { Cart, UserInfos } from "./types";
 
 export async function getUserInfos(): Promise<UserInfos | null> {
@@ -74,18 +76,8 @@ export async function updateCart({
 }): Promise<Cart | null> {
   const cart = await getCart();
   if (cart) {
-    if (quantity === null) {
-      // Remove item if quantity is null
-      cart.items = cart.items.filter((item) => item.id !== id);
-    } else {
-      const existingItem = cart.items.find((item) => item.id === id);
-      if (existingItem) {
-        existingItem.quantity = quantity;
-      } else {
-        cart.items.push({ id, quantity });
-      }
-    }
-    await setCart(cart);
+    const updatedCart = prepareCart({ cart, id, quantity });
+    await setCart(updatedCart);
   }
   return cart;
 }

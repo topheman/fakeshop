@@ -1,12 +1,14 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import Image from "next/image";
 
-import { useCart, useCartDisplay } from "@/hooks/cart";
+import { useCart, useCartDisplay, useUpdateCart } from "@/hooks/cart";
 import { useProductsByIds } from "@/hooks/products";
 import { useIsMobile } from "@/hooks/utils";
 import type { Product } from "@/lib/api";
+import { prepareCart } from "@/utils/cart";
 
 import { Button } from "./ui/button";
 import {
@@ -24,6 +26,17 @@ export function Cart() {
   const productQueries = useProductsByIds(
     cart?.items.map((item) => item.id) ?? [],
   );
+  const updateCart = useUpdateCart();
+  const queryClient = useQueryClient();
+
+  async function handleUpdateCart(id: number, quantity: number) {
+    if (cart) {
+      const optimisticCart = prepareCart({ cart, id, quantity });
+      queryClient.setQueryData(["cart"], optimisticCart);
+    }
+    const updatedCart = await updateCart.mutateAsync({ id, quantity });
+    queryClient.setQueryData(["cart"], updatedCart);
+  }
 
   const cartItems = cart?.items ?? [];
   const products = productQueries
@@ -77,6 +90,9 @@ export function Cart() {
                             variant="outline"
                             size="icon"
                             className="size-8"
+                            onClick={() =>
+                              handleUpdateCart(product.id, item.quantity - 1)
+                            }
                           >
                             -
                           </Button>
@@ -87,6 +103,9 @@ export function Cart() {
                             variant="outline"
                             size="icon"
                             className="size-8"
+                            onClick={() =>
+                              handleUpdateCart(product.id, item.quantity + 1)
+                            }
                           >
                             +
                           </Button>
