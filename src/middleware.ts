@@ -13,11 +13,11 @@ export function middleware(request: NextRequest) {
         // temporary adding 2 items to the cart
         items: [
           {
-            productId: 1,
+            id: 1,
             quantity: 1,
           },
           {
-            productId: 2,
+            id: 2,
             quantity: 1,
           },
         ],

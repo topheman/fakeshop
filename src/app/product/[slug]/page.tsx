@@ -11,12 +11,12 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const productId = extractProductIdFromSlug(slug);
-  if (productId === -1) {
+  const id = extractProductIdFromSlug(slug);
+  if (id === -1) {
     // Handle invalid slug
     return <div>Invalid product URL</div>;
   }
-  const product = await getProduct(productId);
+  const product = await getProduct(id);
 
   return (
     <div className="container mx-auto px-4 py-8">

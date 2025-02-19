@@ -61,28 +61,28 @@ export async function setCart(cart: Cart): Promise<void> {
 
 /**
  * Add an item to the cart
- * @param productId - The ID of the product to add
+ * @param id - The ID of the product to add
  * @param quantity - The quantity of the product to add
  * If quantity is null, the item will be removed from the cart
  */
 export async function addToCart({
-  productId,
+  id,
   quantity,
 }: {
-  productId: number;
+  id: number;
   quantity: number | null;
 }): Promise<Cart | null> {
   const cart = await getCart();
   if (cart) {
     if (quantity === null) {
       // Remove item if quantity is null
-      cart.items = cart.items.filter((item) => item.id !== productId);
+      cart.items = cart.items.filter((item) => item.id !== id);
     } else {
-      const existingItem = cart.items.find((item) => item.id === productId);
+      const existingItem = cart.items.find((item) => item.id === id);
       if (existingItem) {
         existingItem.quantity += quantity;
       } else {
-        cart.items.push({ id: productId, quantity });
+        cart.items.push({ id: id, quantity });
       }
     }
     await setCart(cart);

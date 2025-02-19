@@ -1,15 +1,12 @@
-export function generateProductSlug(
-  productName: string,
-  productId: number,
-): string {
+export function generateProductSlug(name: string, id: number): string {
   // Convert the product name to lowercase and replace spaces and special characters with hyphens
-  const nameSlug = productName
+  const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
   // Append the product ID to the name slug
-  return `${nameSlug}-${productId}`;
+  return `${slug}-${id}`;
 }
 
 export function extractProductIdFromSlug(slug: string): number {

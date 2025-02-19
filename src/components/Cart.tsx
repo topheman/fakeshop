@@ -16,12 +16,7 @@ export function Cart() {
   const { isOpen, setIsOpen } = useCartDisplay();
   const isMobile = useIsMobile();
   const { data: cart } = useCart();
-  const result = useProductsByIds(
-    cart?.items.map(
-      // todo refactor productId to id on the codebase
-      (item) => (item as unknown as { productId: number }).productId,
-    ) ?? [],
-  );
+  const result = useProductsByIds(cart?.items.map((item) => item.id) ?? []);
   console.log(result);
 
   return (

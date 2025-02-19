@@ -37,7 +37,7 @@ export function useCart(options?: MyUseQueryOptions<typeof getCart>) {
 export function useAddToCart(options?: MyUseMutationOptions<typeof addToCart>) {
   return useMutation({
     mutationKey: ["addToCart"],
-    mutationFn: ({ productId, quantity }) => addToCart({ productId, quantity }),
+    mutationFn: ({ id, quantity }) => addToCart({ id, quantity }),
     ...options,
   });
 }
