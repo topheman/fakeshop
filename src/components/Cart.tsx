@@ -1,6 +1,7 @@
 "use client";
 
-import { useCartDisplay } from "@/hooks/cart";
+import { useCart, useCartDisplay } from "@/hooks/cart";
+import { useProductsByIds } from "@/hooks/products";
 import { useIsMobile } from "@/hooks/utils";
 
 import {
@@ -14,6 +15,14 @@ import {
 export function Cart() {
   const { isOpen, setIsOpen } = useCartDisplay();
   const isMobile = useIsMobile();
+  const { data: cart } = useCart();
+  const result = useProductsByIds(
+    cart?.items.map(
+      // todo refactor productId to id on the codebase
+      (item) => (item as unknown as { productId: number }).productId,
+    ) ?? [],
+  );
+  console.log(result);
 
   return (
     <Sheet open={isOpen} onOpenChange={() => setIsOpen(!isOpen)}>

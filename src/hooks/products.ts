@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 
 import { getProduct, getProducts, searchProducts } from "@/lib/api";
 import { MyUseQueryOptions } from "@/lib/query/client";
@@ -39,5 +39,15 @@ export function useProduct(
     queryKey: ["product", id],
     queryFn: () => getProduct(id),
     ...options,
+  });
+}
+
+export function useProductsByIds(ids: number[]) {
+  return useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ["product", id],
+      queryFn: () => getProduct(id),
+      enabled: !!id,
+    })),
   });
 }
