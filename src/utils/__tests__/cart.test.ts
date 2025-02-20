@@ -45,4 +45,11 @@ describe("prepareCart", () => {
     expect(result.items).toContainEqual({ id: 1, quantity: 2 }); // Original quantity remains
     expect(result.items).toContainEqual({ id: 2, quantity: 1 });
   });
+
+  test("converts negative quantity to 0", () => {
+    const result = prepareCart({ cart, id: 1, quantity: -3 });
+    expect(result.items).toHaveLength(2);
+    expect(result.items).toContainEqual({ id: 1, quantity: 0 });
+    expect(result.items).toContainEqual({ id: 2, quantity: 1 });
+  });
 });

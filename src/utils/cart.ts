@@ -34,10 +34,11 @@ export function prepareCart({
   } else {
     // Update item with provided quantity
     const existingItem = cart.items.find((item) => item.id === id);
+    const safeQuantity = quantity < 0 ? 0 : quantity;
     if (existingItem) {
-      existingItem.quantity = quantity;
+      existingItem.quantity = safeQuantity;
     } else {
-      cart.items.push({ id, quantity });
+      cart.items.push({ id, quantity: safeQuantity });
     }
   }
 
