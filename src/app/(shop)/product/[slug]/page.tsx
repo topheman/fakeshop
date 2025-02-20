@@ -34,10 +34,10 @@ export default async function ProductPage({
             {product.title}
           </h1>
           <p className="mb-4 text-gray-600">{product.description}</p>
-          <p className="mb-4 text-2xl font-bold text-primary">
-            ${product.price.toFixed(2)}
+          <p className="mb-4 flex items-center justify-between text-2xl font-bold text-primary">
+            <span>${product.price.toFixed(2)}</span>
+            <AddToCartButton id={product.id} title={product.title} />
           </p>
-          <AddToCartButton id={product.id} title={product.title} />
         </div>
       </div>
     </div>
