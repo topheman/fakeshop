@@ -1,5 +1,4 @@
 import CategoryList from "@/components/CategoryList";
-import FakeLogin from "@/components/FakeLogin";
 
 export default function Home() {
   return (
@@ -9,15 +8,14 @@ export default function Home() {
       </h1>
       <p className="mb-4">
         FakeShop is a demo e-commerce website built with Next.js 15, where I
-        test the latest features of the framework, like React Server Components,
-        server actions, streaming, and progressive enhancement.
+        test the latest features of the framework, like:
       </p>
-      <p className="mb-4">
-        The button below will let you login as a fake user.
-      </p>
-      <div className="text-center">
-        <FakeLogin />
-      </div>
+      <ul className="list-disc space-y-2 pl-8 leading-4">
+        <li>React Server Components</li>
+        <li>Server actions</li>
+        <li>Progressive enhancement</li>
+        <li>Streaming</li>
+      </ul>
       <CategoryList />
     </div>
   );
