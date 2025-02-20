@@ -13,6 +13,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useCallback } from "react";
 
 import { useSearchProducts } from "@/hooks/products";
+import { cn } from "@/lib/utils";
 
 import type { Product } from "../types";
 import { generateProductSlug } from "../utils/slugUtils";
@@ -68,9 +69,15 @@ export default function SearchCombobox({ initialQuery = "" }) {
         <Combobox<Product | string | null>
           value={selectedProduct}
           onChange={handleChange}
+          onClose={() => setQuery("")}
         >
           <div className="relative">
-            <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">
+            <div
+              className={cn(
+                "relative w-full cursor-default rounded-lg overflow-hidden bg-white text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm",
+                query === "" ? "" : "sm:rounded-b-none",
+              )}
+            >
               <ComboboxInput<Product>
                 className="w-full rounded-lg border-none bg-white py-2 pl-3 pr-10 text-[16px] leading-5 text-gray-900 focus:outline-none focus:ring-0 sm:text-sm md:min-w-[400px]"
                 displayValue={() => {
@@ -92,7 +99,7 @@ export default function SearchCombobox({ initialQuery = "" }) {
           {query === "" ? null : (
             <ComboboxOptions
               static
-              className="fixed inset-x-0 mt-1 max-h-60 overflow-auto bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:absolute sm:inset-x-auto sm:w-full sm:rounded-md sm:text-sm"
+              className="fixed inset-x-0 mt-3 max-h-60 overflow-auto bg-white pb-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:absolute sm:inset-x-auto sm:mt-0 sm:w-full sm:rounded-b-md sm:text-sm"
             >
               <>
                 <ComboboxOption
