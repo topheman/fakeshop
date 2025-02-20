@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 
 import { logout } from "@/actions/auth";
 import { getUserInfos } from "@/actions/session";
+import { PageContainer } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
+
 export const metadata: Metadata = {
   title: "My Account - FakeShop",
   description: "View and manage your FakeShop account",
@@ -18,7 +20,7 @@ export default async function AccountPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <PageContainer>
       <h1 className="mb-6 text-3xl font-bold text-primary">My Account</h1>
 
       <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -80,6 +82,6 @@ export default async function AccountPage() {
           </form>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

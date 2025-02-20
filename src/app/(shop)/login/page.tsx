@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { login } from "@/actions/auth";
 import { getUserInfos } from "@/actions/session";
+import { PageContainer } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-8">
+    <PageContainer className="flex min-h-[calc(100vh-200px)] items-center justify-center">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-primary">Welcome Back</h1>
@@ -44,6 +45,6 @@ export default async function LoginPage({
           </Button>
         </form>
       </div>
-    </div>
+    </PageContainer>
   );
 }

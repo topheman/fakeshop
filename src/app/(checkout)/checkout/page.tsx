@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getUserInfos, getCart } from "@/actions/session";
+import { PageContainer } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { getProduct } from "@/lib/api";
 import { generateProductSlug } from "@/utils/slugUtils";
@@ -54,7 +55,7 @@ export default async function CheckoutPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <PageContainer>
       <h1 className="mb-8 text-3xl font-bold text-primary">Checkout</h1>
 
       <div className="grid gap-8 lg:grid-cols-2">
@@ -191,6 +192,6 @@ export default async function CheckoutPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

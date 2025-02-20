@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { PageContainer } from "@/components/Layout";
 import { getProduct } from "@/lib/api";
 import { extractProductIdFromSlug } from "@/utils/slugUtils";
 
@@ -18,7 +19,7 @@ export default async function ProductPage({
   const product = await getProduct(id);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <PageContainer>
       <div className="grid grid-cols-1 md:grid-cols-2">
         <h1 className="mb-0 text-3xl font-bold text-primary md:col-span-2 md:mb-4">
           {product.title}
@@ -40,6 +41,6 @@ export default async function ProductPage({
           </p>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

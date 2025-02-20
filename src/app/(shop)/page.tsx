@@ -1,8 +1,9 @@
 import CategoryList from "@/components/CategoryList";
+import { PageContainer } from "@/components/Layout";
 
 export default function Home() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <PageContainer>
       <h1 className="mb-4 text-4xl font-bold text-primary">
         Welcome to FakeShop
       </h1>
@@ -17,6 +18,6 @@ export default function Home() {
         <li>Streaming</li>
       </ul>
       <CategoryList />
-    </div>
+    </PageContainer>
   );
 }
