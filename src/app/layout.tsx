@@ -4,8 +4,6 @@ import "./globals.css";
 import Script from "next/script";
 import type React from "react";
 
-import { Layout } from "@/components/Layout";
-
 import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });

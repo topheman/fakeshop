@@ -2,11 +2,13 @@
 
 import { X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 import { useCart, useCartDisplay, useUpdateOptimisticCart } from "@/hooks/cart";
 import { useProductsByIds } from "@/hooks/products";
 import { useIsMobile } from "@/hooks/utils";
 import type { Product } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 import { Button } from "./ui/button";
 import {
@@ -132,12 +134,15 @@ export function Cart() {
               <span>Shipping</span>
               <span>Calculated at checkout</span>
             </div>
-            <Button
-              className="w-full text-white"
-              disabled={cartItems.length === 0}
+            <Link
+              href="/checkout"
+              className={cn(
+                "inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+                cartItems.length === 0 && "pointer-events-none opacity-50",
+              )}
             >
               Proceed to Checkout
-            </Button>
+            </Link>
           </div>
         </SheetFooter>
       </SheetContent>
