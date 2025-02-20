@@ -19,8 +19,8 @@ export default function Header() {
         <Suspense fallback={<div>Loading...</div>}>
           <SearchCombobox />
         </Suspense>
-        <nav className="-mb-2 pt-1">
-          <ul className="-mr-1 flex space-x-2 md:space-x-4">
+        <nav className="mr-[10px] mt-[10px]">
+          <ul className="flex space-x-2 md:space-x-4">
             <li>
               <Suspense fallback={<div>Loading...</div>}>
                 <UserIcon />
