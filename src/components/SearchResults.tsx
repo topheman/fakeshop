@@ -1,5 +1,5 @@
-import { searchProducts } from "../lib/api";
-import { Product } from "../types";
+import { searchProducts } from "@/lib/api";
+import type { Product } from "@/types";
 
 import ProductGrid from "./ProductGrid";
 

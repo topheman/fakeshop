@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getUserSession } from "../actions/auth";
+import { getUserSession } from "@/actions/auth";
 
 export function useUserSession() {
   const {

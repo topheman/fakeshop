@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import type { Product } from "../lib/api";
-import { generateProductSlug } from "../utils/slugUtils";
+import type { Product } from "@/lib/api";
+import { generateProductSlug } from "@/utils/slugUtils";
 
 import { AddToCartButton } from "./AddToCartButton";
 

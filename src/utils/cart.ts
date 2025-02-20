@@ -1,4 +1,4 @@
-import { Cart } from "../actions/types";
+import { Cart } from "@/actions/types";
 
 /**
  * Prepare the cart for the update

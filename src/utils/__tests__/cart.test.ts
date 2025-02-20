@@ -1,6 +1,7 @@
 import { describe, expect, test, beforeEach } from "vitest";
 
-import { Cart } from "../../actions/types";
+import { Cart } from "@/actions/types";
+
 import { prepareCart } from "../cart";
 
 describe("prepareCart", () => {

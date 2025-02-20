@@ -4,9 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useState } from "react";
 
 import { updateCart, getCart } from "@/actions/session";
-
-import { MyUseMutationOptions, MyUseQueryOptions } from "../lib/query/client";
-import { prepareCart } from "../utils/cart";
+import { MyUseMutationOptions, MyUseQueryOptions } from "@/lib/query/client";
+import { prepareCart } from "@/utils/cart";
 
 const CartContext = createContext<{
   isOpen: boolean;

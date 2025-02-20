@@ -2,8 +2,7 @@ import Image from "next/image";
 
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { getProduct } from "@/lib/api";
-
-import { extractProductIdFromSlug } from "../../../utils/slugUtils";
+import { extractProductIdFromSlug } from "@/utils/slugUtils";
 
 export default async function ProductPage({
   params,

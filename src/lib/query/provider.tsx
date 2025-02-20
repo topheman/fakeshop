@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
 
-import { CartProvider } from "../../hooks/cart";
+import { CartProvider } from "@/hooks/cart";
 
 import { makeQueryClient } from "./client";
 

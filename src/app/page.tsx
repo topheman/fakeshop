@@ -1,5 +1,5 @@
-import CategoryList from "../components/CategoryList";
-import FakeLogin from "../components/FakeLogin";
+import CategoryList from "@/components/CategoryList";
+import FakeLogin from "@/components/FakeLogin";
 
 export default function Home() {
   return (

@@ -14,9 +14,8 @@ import { useState, useCallback } from "react";
 
 import { useSearchProducts } from "@/hooks/products";
 import { cn } from "@/lib/utils";
-
-import type { Product } from "../types";
-import { generateProductSlug } from "../utils/slugUtils";
+import type { Product } from "@/types";
+import { generateProductSlug } from "@/utils/slugUtils";
 
 export default function SearchCombobox({ initialQuery = "" }) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

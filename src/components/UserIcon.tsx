@@ -1,6 +1,6 @@
 import { User } from "lucide-react";
 
-import { getUserInfos } from "../actions/session";
+import { getUserInfos } from "@/actions/session";
 
 export default async function UserIcon() {
   const userInfos = await getUserInfos();

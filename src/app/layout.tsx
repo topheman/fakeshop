@@ -5,9 +5,8 @@ import Script from "next/script";
 import type React from "react";
 
 import { Cart } from "@/components/Cart";
-
-import Footer from "../components/Footer";
-import Header from "../components/Header";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 
 import { Providers } from "./providers";
 

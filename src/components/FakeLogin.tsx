@@ -1,5 +1,5 @@
-import { login, logout } from "../actions/auth";
-import { getUserInfos } from "../actions/session";
+import { login, logout } from "@/actions/auth";
+import { getUserInfos } from "@/actions/session";
 
 import { Button } from "./ui/button";
 
