@@ -19,7 +19,10 @@ export default async function ProductPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2">
+        <h1 className="mb-0 text-3xl font-bold text-primary md:col-span-2 md:mb-4">
+          {product.title}
+        </h1>
         <div>
           <Image
             src={product.thumbnail || "/placeholder.svg"}
@@ -30,9 +33,6 @@ export default async function ProductPage({
           />
         </div>
         <div>
-          <h1 className="mb-4 text-3xl font-bold text-primary">
-            {product.title}
-          </h1>
           <p className="mb-4 text-gray-600">{product.description}</p>
           <p className="mb-4 flex items-center justify-between text-2xl font-bold text-primary">
             <span>${product.price.toFixed(2)}</span>
