@@ -28,7 +28,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
             {product.title}
           </h2>
           <p className="mt-1 flex items-center justify-between text-lg font-medium text-gray-900">
-            <div>${product.price.toFixed(2)}</div>
+            <span>${product.price.toFixed(2)}</span>
             <AddToCartButton
               id={product.id}
               title={product.title}

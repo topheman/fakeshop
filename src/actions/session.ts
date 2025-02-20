@@ -72,7 +72,7 @@ export async function updateCart({
   quantity,
 }: {
   id: number;
-  quantity: number | null;
+  quantity: number | null | undefined;
 }): Promise<Cart | null> {
   const cart = await getCart();
   if (cart) {

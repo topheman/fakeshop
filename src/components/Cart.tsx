@@ -1,14 +1,12 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import Image from "next/image";
 
-import { useCart, useCartDisplay, useUpdateCart } from "@/hooks/cart";
+import { useCart, useCartDisplay, useUpdateOptimisticCart } from "@/hooks/cart";
 import { useProductsByIds } from "@/hooks/products";
 import { useIsMobile } from "@/hooks/utils";
 import type { Product } from "@/lib/api";
-import { prepareCart } from "@/utils/cart";
 
 import { Button } from "./ui/button";
 import {
@@ -26,16 +24,10 @@ export function Cart() {
   const productQueries = useProductsByIds(
     cart?.items.map((item) => item.id) ?? [],
   );
-  const updateCart = useUpdateCart();
-  const queryClient = useQueryClient();
+  const updateCartOptimistic = useUpdateOptimisticCart();
 
   async function handleUpdateCart(id: number, quantity: number | null) {
-    if (cart) {
-      const optimisticCart = prepareCart({ cart, id, quantity });
-      queryClient.setQueryData(["cart"], optimisticCart);
-    }
-    const updatedCart = await updateCart.mutateAsync({ id, quantity });
-    queryClient.setQueryData(["cart"], updatedCart);
+    updateCartOptimistic.mutate({ id, quantity });
   }
 
   const cartItems = cart?.items ?? [];
