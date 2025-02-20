@@ -5,7 +5,7 @@ import SearchCombobox from "./SearchCombobox";
 import ShoppingCart from "./ShoppingCart";
 import UserIcon from "./UserIcon";
 
-export default function Header() {
+export default function Header({ mode }: { mode?: "shop" | "checkout" }) {
   return (
     <header className="bg-primary p-2 text-white">
       <div className="container mx-auto flex items-center justify-between">
@@ -26,7 +26,7 @@ export default function Header() {
                 <UserIcon />
               </Suspense>
             </li>
-            <li>
+            <li className={mode === "checkout" ? "invisible" : ""}>
               <ShoppingCart />
             </li>
           </ul>
