@@ -10,11 +10,17 @@ export const metadata: Metadata = {
   description: "Login to your FakeShop account",
 };
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirectTo?: string }>;
+}) {
+  const { redirectTo } = await searchParams;
+
   // Check if user is already logged in
   const session = await getUserInfos();
   if (session) {
-    redirect("/");
+    redirect(redirectTo || "/");
   }
 
   return (
