@@ -9,8 +9,12 @@ export default function Header() {
   return (
     <header className="bg-primary p-2 text-white">
       <div className="container mx-auto flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold">
-          FakeShop
+        <Link
+          href="/"
+          className="flex flex-col text-lg font-bold leading-tight sm:flex-row sm:text-2xl sm:leading-normal"
+        >
+          <span>Fake</span>
+          <span>Shop</span>
         </Link>
         <Suspense fallback={<div>Loading...</div>}>
           <SearchCombobox />
