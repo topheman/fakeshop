@@ -9,6 +9,7 @@ import { useProductsByIds } from "@/hooks/products";
 import { useIsMobile } from "@/hooks/utils";
 import type { Product } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { generateProductSlug } from "@/utils/slugUtils";
 
 import { Button } from "./ui/button";
 import {
@@ -69,12 +70,19 @@ export function Cart() {
                     className="flex items-center gap-4 border-b pb-4"
                   >
                     <div className="relative size-20 overflow-hidden rounded-md">
-                      <Image
-                        src={product.thumbnail}
-                        alt={product.title}
-                        fill
-                        className="object-cover"
-                      />
+                      <Link
+                        href={`/product/${generateProductSlug(product.title, product.id)}`}
+                        onClick={() => {
+                          setIsOpen(false);
+                        }}
+                      >
+                        <Image
+                          src={product.thumbnail}
+                          alt={product.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </Link>
                     </div>
                     <div className="flex flex-1 flex-col">
                       <h3 className="font-medium">{product.title}</h3>

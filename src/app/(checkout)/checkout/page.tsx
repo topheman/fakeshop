@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getUserInfos, getCart } from "@/actions/session";
 import { Button } from "@/components/ui/button";
 import { getProduct } from "@/lib/api";
+import { generateProductSlug } from "@/utils/slugUtils";
 
 export default async function CheckoutPage() {
   const userInfos = await getUserInfos();
@@ -114,12 +115,16 @@ export default async function CheckoutPage() {
               return (
                 <div key={item.id} className="flex items-center gap-4 py-4">
                   <div className="relative size-20 overflow-hidden rounded-md bg-gray-100">
-                    <Image
-                      src={product.thumbnail || `/placeholder.svg`}
-                      alt={product.title}
-                      fill
-                      className="object-cover"
-                    />
+                    <Link
+                      href={`/product/${generateProductSlug(product.title, product.id)}`}
+                    >
+                      <Image
+                        src={product.thumbnail || `/placeholder.svg`}
+                        alt={product.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </Link>
                   </div>
                   <div className="flex flex-1 flex-col">
                     <h3 className="font-medium">{product.title}</h3>
