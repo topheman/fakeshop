@@ -4,6 +4,8 @@ import Link from "next/link";
 import type { Product } from "../lib/api";
 import { generateProductSlug } from "../utils/slugUtils";
 
+import { AddToCartButton } from "./AddToCartButton";
+
 export default function ProductGrid({ products }: { products: Product[] }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -25,8 +27,13 @@ export default function ProductGrid({ products }: { products: Product[] }) {
           <h2 className="mt-4 text-lg font-semibold text-gray-700">
             {product.title}
           </h2>
-          <p className="mt-1 text-lg font-medium text-gray-900">
-            ${product.price.toFixed(2)}
+          <p className="mt-1 flex items-center justify-between text-lg font-medium text-gray-900">
+            <div>${product.price.toFixed(2)}</div>
+            <AddToCartButton
+              id={product.id}
+              title={product.title}
+              variant="small"
+            />
           </p>
         </Link>
       ))}

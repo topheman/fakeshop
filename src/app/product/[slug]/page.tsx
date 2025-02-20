@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { Button } from "@/components/ui/button";
+import { AddToCartButton } from "@/components/AddToCartButton";
 import { getProduct } from "@/lib/api";
 
 import { extractProductIdFromSlug } from "../../../utils/slugUtils";
@@ -38,7 +38,7 @@ export default async function ProductPage({
           <p className="mb-4 text-2xl font-bold text-primary">
             ${product.price.toFixed(2)}
           </p>
-          <Button className="bg-primary text-white">Add to Cart</Button>
+          <AddToCartButton id={product.id} title={product.title} />
         </div>
       </div>
     </div>
