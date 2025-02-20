@@ -39,10 +39,7 @@ export default async function LoginPage({
         </div>
 
         <form action={login} className="mt-8 space-y-6">
-          <Button
-            type="submit"
-            className="w-full bg-primary px-4 py-3 text-white hover:bg-primary/90"
-          >
+          <Button type="submit" className="w-full px-4 py-3">
             Fake Login
           </Button>
         </form>

@@ -13,12 +13,7 @@ export default async function FakeLogin() {
           You are logged in as {session.firstName} {session.lastName}
         </p>
         <form action={logout}>
-          <Button
-            type="submit"
-            className="bg-primary px-6 py-3 text-lg text-white hover:bg-primary/90"
-          >
-            Logout
-          </Button>
+          <Button type="submit">Logout</Button>
         </form>
       </>
     );
@@ -31,12 +26,7 @@ export default async function FakeLogin() {
         user session for demonstration purposes.
       </p>
       <form action={login}>
-        <Button
-          type="submit"
-          className="bg-primary px-6 py-3 text-lg text-white hover:bg-primary/90"
-        >
-          Fake Login
-        </Button>
+        <Button type="submit">Fake Login</Button>
       </form>
     </>
   );

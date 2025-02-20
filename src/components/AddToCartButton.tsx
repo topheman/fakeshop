@@ -31,24 +31,14 @@ export function AddToCartButton({
 
   if (variant === "default") {
     return (
-      <Button
-        className="bg-primary text-white"
-        title={finalTitle}
-        onClick={handleAddToCart}
-        type="button"
-      >
+      <Button title={finalTitle} onClick={handleAddToCart} type="button">
         <ShoppingCartIcon className="mr-2 size-4" strokeWidth={3} />
         Add to Cart
       </Button>
     );
   }
   return (
-    <Button
-      title={finalTitle}
-      className="bg-primary text-white"
-      onClick={handleAddToCart}
-      type="button"
-    >
+    <Button title={finalTitle} onClick={handleAddToCart} type="button">
       <ShoppingCartIcon className="size-5" strokeWidth={3} />
     </Button>
   );
