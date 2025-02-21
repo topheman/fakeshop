@@ -1,5 +1,3 @@
-import { cache } from "react";
-
 const BASE_URL = "https://dummyjson.com";
 
 export interface Product {
@@ -40,41 +38,47 @@ async function fetchApi<T>(
   return res.json();
 }
 
-export const getCategories = cache(
-  async (): Promise<{ slug: string; name: string }[]> => {
-    const categories = await fetchApi<Category[]>("/products/categories");
-    return categories.map(({ slug, name }) => ({
-      slug,
-      name,
-    }));
-  },
-);
+export const getCategories = async (): Promise<
+  { slug: string; name: string }[]
+> => {
+  console.log("getCategories");
+  const categories = await fetchApi<Category[]>("/products/categories");
+  return categories.map(({ slug, name }) => ({
+    slug,
+    name,
+  }));
+};
 
-export const getProducts = cache(
-  async (limit = 10, skip = 0): Promise<SearchResult> => {
-    return fetchApi<SearchResult>(`/products?limit=${limit}&skip=${skip}`);
-  },
-);
+export const getProducts = async (
+  limit = 10,
+  skip = 0,
+): Promise<SearchResult> => {
+  console.log("getProducts", { limit, skip });
+  return fetchApi<SearchResult>(`/products?limit=${limit}&skip=${skip}`);
+};
 
-export const searchProducts = cache(
-  async (
-    query: string,
-    { limit = 5 }: { limit?: number } = {},
-  ): Promise<SearchResult> => {
-    return fetchApi<SearchResult>(
-      `/products/search?q=${encodeURIComponent(query)}&limit=${limit}`,
-    );
-  },
-);
+export const searchProducts = async (
+  query: string,
+  { limit = 5 }: { limit?: number } = {},
+): Promise<SearchResult> => {
+  console.log("searchProducts", { query, limit });
+  return fetchApi<SearchResult>(
+    `/products/search?q=${encodeURIComponent(query)}&limit=${limit}`,
+  );
+};
 
-export const getProduct = cache(async (id: number): Promise<Product> => {
+export const getProduct = async (id: number): Promise<Product> => {
+  console.log("getProduct", { id });
   return fetchApi<Product>(`/products/${id}`);
-});
+};
 
-export const getProductsByCategory = cache(
-  async (category: string, limit = 10, skip = 0): Promise<SearchResult> => {
-    return fetchApi<SearchResult>(
-      `/products/category/${encodeURIComponent(category)}?limit=${limit}&skip=${skip}`,
-    );
-  },
-);
+export const getProductsByCategory = async (
+  category: string,
+  limit = 10,
+  skip = 0,
+): Promise<SearchResult> => {
+  console.log("getProductsByCategory", { category, limit, skip });
+  return fetchApi<SearchResult>(
+    `/products/category/${encodeURIComponent(category)}?limit=${limit}&skip=${skip}`,
+  );
+};
