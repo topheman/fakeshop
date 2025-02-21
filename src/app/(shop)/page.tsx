@@ -1,4 +1,5 @@
 import CategoryList from "@/components/CategoryList";
+import CustomQRCode from "@/components/CustomQRCode";
 import { PageContainer } from "@/components/Layout";
 
 export default function Home() {
@@ -18,6 +19,9 @@ export default function Home() {
         <li>Streaming</li>
       </ul>
       <CategoryList />
+      <div className="mt-6">
+        <CustomQRCode payload="https://thefakeshop.vercel.app/" />
+      </div>
     </PageContainer>
   );
 }
