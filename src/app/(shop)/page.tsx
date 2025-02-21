@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import CategoryList from "@/components/CategoryList";
 import CustomQRCode from "@/components/CustomQRCode";
 import { PageContainer } from "@/components/Layout";
@@ -19,9 +21,13 @@ export default function Home() {
         <li>Progressive enhancement</li>
         <li>Streaming</li>
       </ul>
-      <CategoryList />
+      <Suspense fallback={<div>Loading...</div>}>
+        <CategoryList />
+      </Suspense>
       <div className="mt-6">
-        <CustomQRCode payload="https://thefakeshop.vercel.app/" />
+        <Suspense fallback={<div>Loading...</div>}>
+          <CustomQRCode payload="https://thefakeshop.vercel.app/" />
+        </Suspense>
       </div>
     </PageContainer>
   );

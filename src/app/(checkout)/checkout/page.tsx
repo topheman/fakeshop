@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Fragment, Suspense } from "react";
 
 import { getUserInfos, getCart } from "@/actions/session";
 import { PageContainer } from "@/components/Layout";
@@ -7,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { getProduct } from "@/lib/api";
 import { generateProductSlug } from "@/utils/slugUtils";
 
-export default async function CheckoutPage() {
-  console.log("* CheckoutPage");
+// Async child component
+async function CheckoutContent() {
   const userInfos = await getUserInfos();
   const cart = await getCart();
 
@@ -19,44 +20,50 @@ export default async function CheckoutPage() {
 
   if (!userInfos) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
-        <h2 className="mb-4 text-2xl font-semibold">
-          Please Login to Continue
-        </h2>
-        <p className="mb-6 text-gray-600">
-          You need to be logged in to access the checkout
-        </p>
-        <Link
-          href="/login?redirectTo=/checkout"
-          className="rounded-md bg-primary px-6 py-2 text-white transition-colors hover:bg-primary/90"
-        >
-          Go to Login
-        </Link>
-      </div>
+      <Fragment>
+        <h1 className="mb-8 text-3xl font-bold text-primary">Checkout</h1>
+        <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
+          <h2 className="mb-4 text-2xl font-semibold">
+            Please Login to Continue
+          </h2>
+          <p className="mb-6 text-gray-600">
+            You need to be logged in to access the checkout
+          </p>
+          <Link
+            href="/login?redirectTo=/checkout"
+            className="rounded-md bg-primary px-6 py-2 text-white transition-colors hover:bg-primary/90"
+          >
+            Go to Login
+          </Link>
+        </div>
+      </Fragment>
     );
   }
 
   if (!cart || cart.items.length === 0) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
-        <h2 className="mb-4 text-2xl font-semibold">Your Cart is Empty</h2>
-        <p className="mb-6 text-gray-600">
-          Looks like you haven't added anything to your cart yet
-        </p>
-        <Button asChild>
-          <Link
-            href="/"
-            className="rounded-md bg-primary px-6 py-2 text-white transition-colors hover:bg-primary/90"
-          >
-            Continue Shopping
-          </Link>
-        </Button>
-      </div>
+      <Fragment>
+        <h1 className="mb-8 text-3xl font-bold text-primary">Checkout</h1>
+        <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
+          <h2 className="mb-4 text-2xl font-semibold">Your Cart is Empty</h2>
+          <p className="mb-6 text-gray-600">
+            Looks like you haven't added anything to your cart yet
+          </p>
+          <Button asChild>
+            <Link
+              href="/"
+              className="rounded-md bg-primary px-6 py-2 text-white transition-colors hover:bg-primary/90"
+            >
+              Continue Shopping
+            </Link>
+          </Button>
+        </div>
+      </Fragment>
     );
   }
 
   return (
-    <PageContainer>
+    <Fragment>
       <h1 className="mb-8 text-3xl font-bold text-primary">Checkout</h1>
 
       <div className="grid gap-8 lg:grid-cols-2">
@@ -193,6 +200,17 @@ export default async function CheckoutPage() {
           </div>
         </div>
       </div>
+    </Fragment>
+  );
+}
+
+// Sync root component
+export default function CheckoutPage() {
+  return (
+    <PageContainer>
+      <Suspense fallback={<div>Loading...</div>}>
+        <CheckoutContent />
+      </Suspense>
     </PageContainer>
   );
 }

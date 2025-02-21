@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { logout } from "@/actions/auth";
 import { getUserInfos } from "@/actions/session";
@@ -11,7 +12,8 @@ export const metadata: Metadata = {
   description: "View and manage your FakeShop account",
 };
 
-export default async function AccountPage() {
+// Async child component
+async function AccountContent() {
   const userInfos = await getUserInfos();
 
   // Redirect to login if not authenticated
@@ -20,7 +22,7 @@ export default async function AccountPage() {
   }
 
   return (
-    <PageContainer>
+    <>
       <h1 className="mb-6 text-3xl font-bold text-primary">My Account</h1>
 
       <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -82,6 +84,17 @@ export default async function AccountPage() {
           </form>
         </div>
       </div>
+    </>
+  );
+}
+
+// Sync root component
+export default function AccountPage() {
+  return (
+    <PageContainer>
+      <Suspense fallback={<div>Loading account...</div>}>
+        <AccountContent />
+      </Suspense>
     </PageContainer>
   );
 }
