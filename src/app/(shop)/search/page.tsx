@@ -8,6 +8,7 @@ export default async function SearchPage({
 }) {
   const { q } = await searchParams;
   const query = typeof q === "string" ? q : "";
+  console.log("* SearchPage", { q });
 
   return (
     <PageContainer>

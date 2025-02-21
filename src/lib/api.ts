@@ -41,7 +41,7 @@ async function fetchApi<T>(
 export const getCategories = async (): Promise<
   { slug: string; name: string }[]
 > => {
-  console.log("getCategories");
+  console.log("  > getCategories");
   const categories = await fetchApi<Category[]>("/products/categories");
   return categories.map(({ slug, name }) => ({
     slug,
@@ -53,7 +53,7 @@ export const getProducts = async (
   limit = 10,
   skip = 0,
 ): Promise<SearchResult> => {
-  console.log("getProducts", { limit, skip });
+  console.log("  > getProducts", { limit, skip });
   return fetchApi<SearchResult>(`/products?limit=${limit}&skip=${skip}`);
 };
 
@@ -61,14 +61,14 @@ export const searchProducts = async (
   query: string,
   { limit = 5 }: { limit?: number } = {},
 ): Promise<SearchResult> => {
-  console.log("searchProducts", { query, limit });
+  console.log("  > searchProducts", { query, limit });
   return fetchApi<SearchResult>(
     `/products/search?q=${encodeURIComponent(query)}&limit=${limit}`,
   );
 };
 
 export const getProduct = async (id: number): Promise<Product> => {
-  console.log("getProduct", { id });
+  console.log("  > getProduct", { id });
   return fetchApi<Product>(`/products/${id}`);
 };
 
@@ -77,7 +77,7 @@ export const getProductsByCategory = async (
   limit = 10,
   skip = 0,
 ): Promise<SearchResult> => {
-  console.log("getProductsByCategory", { category, limit, skip });
+  console.log("  > getProductsByCategory", { category, limit, skip });
   return fetchApi<SearchResult>(
     `/products/category/${encodeURIComponent(category)}?limit=${limit}&skip=${skip}`,
   );

@@ -3,6 +3,7 @@ import CustomQRCode from "@/components/CustomQRCode";
 import { PageContainer } from "@/components/Layout";
 
 export default function Home() {
+  console.log("* Home");
   return (
     <PageContainer>
       <h1 className="mb-4 text-4xl font-bold text-primary">

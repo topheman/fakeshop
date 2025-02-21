@@ -17,6 +17,7 @@ export default async function LoginPage({
   searchParams: Promise<{ redirectTo?: string }>;
 }) {
   const { redirectTo } = await searchParams;
+  console.log("* LoginPage", { redirectTo });
 
   // Check if user is already logged in
   const session = await getUserInfos();

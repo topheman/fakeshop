@@ -9,6 +9,7 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  console.log("* CategoryPage", { slug });
 
   try {
     const { products } = await getProductsByCategory(slug);

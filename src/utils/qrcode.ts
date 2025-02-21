@@ -3,6 +3,7 @@
 import QRCode from "qrcode";
 
 export async function generateQRCode(url: string): Promise<string> {
+  console.log("  > generateQRCode", { url });
   try {
     const qrDataUrl = await QRCode.toDataURL(url, {
       width: 256,

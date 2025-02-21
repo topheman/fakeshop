@@ -8,6 +8,7 @@ import { getProduct } from "@/lib/api";
 import { generateProductSlug } from "@/utils/slugUtils";
 
 export default async function CheckoutPage() {
+  console.log("* CheckoutPage");
   const userInfos = await getUserInfos();
   const cart = await getCart();
 

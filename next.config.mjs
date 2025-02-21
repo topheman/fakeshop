@@ -16,6 +16,7 @@ const nextConfig = {
     ],
   },
   experimental: {
+    dynamicIO: true,
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
