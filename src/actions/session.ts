@@ -6,6 +6,8 @@ import { prepareCart } from "@/utils/cart";
 
 import type { Cart, UserInfos } from "./types";
 
+const COOKIES_MAX_AGE = 60 * 60 * 24 * 7; // 1 week
+
 export async function getUserInfos(): Promise<UserInfos | null> {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("user_infos");
@@ -27,7 +29,7 @@ export async function setUserInfos(session: UserInfos): Promise<void> {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 60 * 60 * 24 * 7, // 1 week
+    maxAge: COOKIES_MAX_AGE,
   });
 }
 
@@ -57,7 +59,7 @@ export async function setCart(cart: Cart): Promise<void> {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 60 * 60 * 24 * 7, // 1 week
+    maxAge: COOKIES_MAX_AGE,
   });
 }
 
