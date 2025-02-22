@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { isIssuedByJS } from "@/utils/actions";
@@ -24,7 +23,6 @@ export async function login(formData: FormData): Promise<void> {
   try {
     const newSession = createUserInfos();
     await setUserInfos(newSession);
-    revalidatePath("/");
   } catch (error) {
     console.error("Error in login:", error);
     throw new Error("Failed to create session");
@@ -38,7 +36,6 @@ export async function logout(formData: FormData): Promise<void> {
   console.log("logout", formData);
   try {
     await clearUserInfos();
-    revalidatePath("/");
   } catch (error) {
     console.error("Error in logout:", error);
     throw new Error("Failed to clear session");
