@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { PageContainer } from "@/components/Layout";
 import ProductGrid from "@/components/ProductGrid";
 import ProductGridLoading from "@/components/ProductGridLoading";
@@ -20,8 +21,9 @@ async function CategoryContent({
 
     return (
       <>
-        <h1 className="mb-8 text-3xl font-bold text-primary">
-          {slugToDisplayName(slug)}
+        <h1 className="mb-8 flex items-center text-3xl font-bold text-primary">
+          <span className="mr-2">{slugToDisplayName(slug)}</span>
+          <CategoryIcon category={slug} className="size-6" />
         </h1>
         {products.length > 0 ? (
           <ProductGrid products={products} />
