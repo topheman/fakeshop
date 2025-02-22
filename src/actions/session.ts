@@ -3,10 +3,9 @@
 import { cookies } from "next/headers";
 
 import { prepareCart } from "@/utils/cart";
+import { COOKIE_MAX_AGE } from "@/utils/constants";
 
 import type { Cart, UserInfos } from "./types";
-
-const COOKIES_MAX_AGE = 60 * 60 * 24 * 7; // 1 week
 
 export async function getUserInfos(): Promise<UserInfos | null> {
   const cookieStore = await cookies();
@@ -29,7 +28,7 @@ export async function setUserInfos(session: UserInfos): Promise<void> {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: COOKIES_MAX_AGE,
+    maxAge: COOKIE_MAX_AGE,
   });
 }
 
@@ -59,7 +58,7 @@ export async function setCart(cart: Cart): Promise<void> {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: COOKIES_MAX_AGE,
+    maxAge: COOKIE_MAX_AGE,
   });
 }
 

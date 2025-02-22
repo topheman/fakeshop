@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import { COOKIE_MAX_AGE } from "@/utils/constants";
+
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
@@ -16,40 +18,12 @@ export function middleware(request: NextRequest) {
             id: 1,
             quantity: 1,
           },
-          {
-            id: 2,
-            quantity: 1,
-          },
-          {
-            id: 3,
-            quantity: 3,
-          },
-          {
-            id: 4,
-            quantity: 4,
-          },
-          {
-            id: 5,
-            quantity: 5,
-          },
-          {
-            id: 6,
-            quantity: 6,
-          },
-          {
-            id: 7,
-            quantity: 7,
-          },
-          {
-            id: 8,
-            quantity: 8,
-          },
         ],
       }),
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7, // 1 week
+      maxAge: COOKIE_MAX_AGE,
     });
   }
 
