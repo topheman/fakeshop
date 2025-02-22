@@ -1,3 +1,4 @@
+import { User } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -22,7 +23,7 @@ export default function Header({ mode }: { mode?: "shop" | "checkout" }) {
         <nav className="mr-[10px] mt-[10px]">
           <ul className="flex space-x-2 md:space-x-4">
             <li>
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<User />}>
                 <UserIcon />
               </Suspense>
             </li>
