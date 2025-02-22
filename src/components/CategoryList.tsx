@@ -5,6 +5,7 @@ import { getCategories } from "@/lib/api";
 import { CategoryIcon } from "./CategoryIcon";
 
 export default async function CategoryList() {
+  "use cache";
   console.log("  CategoryList");
   const categories = await getCategories();
 

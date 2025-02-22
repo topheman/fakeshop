@@ -9,6 +9,7 @@ interface CustomQRCodeProps {
 }
 
 export default async function CustomQRCode({ payload }: CustomQRCodeProps) {
+  "use cache";
   console.log("  CustomQRCode");
   const qrCodeDataUrl = await generateQRCode(payload);
 
