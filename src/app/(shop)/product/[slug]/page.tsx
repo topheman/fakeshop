@@ -3,6 +3,7 @@ import { Suspense } from "react";
 
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { PageContainer } from "@/components/Layout";
+import { ProductCardLoading } from "@/components/ProductCardLoading";
 import { getProduct } from "@/lib/api";
 import { extractProductIdFromSlug } from "@/utils/slugUtils";
 
@@ -56,7 +57,7 @@ export default function ProductPage({
 }) {
   return (
     <PageContainer>
-      <Suspense fallback={<div>Loading product...</div>}>
+      <Suspense fallback={<ProductCardLoading />}>
         <ProductContent params={params} />
       </Suspense>
     </PageContainer>
