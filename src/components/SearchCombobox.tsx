@@ -10,9 +10,10 @@ import {
 import { Search } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 import { useSearchProducts } from "@/hooks/products";
+import { useIsMobile } from "@/hooks/utils";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 import { generateProductSlug } from "@/utils/slugUtils";
@@ -23,6 +24,8 @@ export default function SearchCombobox({ initialQuery = "" }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
 
   // Use react-query hook for search
   const { data } = useSearchProducts(
@@ -59,6 +62,9 @@ export default function SearchCombobox({ initialQuery = "" }) {
       const slug = generateProductSlug(value.title, value.id);
       router.push(`/product/${slug}`);
     }
+    if (isMobile && inputRef.current) {
+      inputRef.current.blur();
+    }
     setQuery("");
   };
 
@@ -88,6 +94,7 @@ export default function SearchCombobox({ initialQuery = "" }) {
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search products..."
                 name="q"
+                ref={inputRef}
               />
               <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
                 <Search className="size-5 text-gray-400" aria-hidden="true" />
