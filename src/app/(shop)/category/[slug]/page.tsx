@@ -2,6 +2,7 @@ import { Suspense } from "react";
 
 import { PageContainer } from "@/components/Layout";
 import ProductGrid from "@/components/ProductGrid";
+import ProductGridLoading from "@/components/ProductGridLoading";
 import { getProductsByCategory } from "@/lib/api";
 import { slugToDisplayName } from "@/utils/slugUtils";
 
@@ -45,7 +46,7 @@ export default function CategoryPage({
 }) {
   return (
     <PageContainer>
-      <Suspense fallback={<div>Loading category...</div>}>
+      <Suspense fallback={<ProductGridLoading />}>
         <CategoryContent params={params} />
       </Suspense>
     </PageContainer>

@@ -15,9 +15,10 @@ export default function ProductGrid({ products }: { products: Product[] }) {
           href={`/product/${generateProductSlug(product.title, product.id)}`}
           className="block rounded-lg border p-4 transition-shadow hover:shadow-lg"
         >
-          <div className="aspect-w-1 aspect-h-1 xl:aspect-w-7 xl:aspect-h-8 w-full overflow-hidden rounded-lg bg-gray-200">
+          <div className="w-full overflow-hidden rounded-lg bg-gray-200">
             <Image
-              src={product.thumbnail || "/placeholder.svg"}
+              src={product.thumbnail}
+              blurDataURL="/placeholder.svg"
               alt={product.title}
               width={200}
               height={200}

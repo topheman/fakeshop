@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { PageContainer } from "@/components/Layout";
+import ProductGridLoading from "@/components/ProductGridLoading";
 import SearchResults from "@/components/SearchResults";
 
 // Async child component
@@ -31,7 +32,7 @@ export default function SearchPage({
 }) {
   return (
     <PageContainer>
-      <Suspense fallback={<div>Loading search...</div>}>
+      <Suspense fallback={<ProductGridLoading />}>
         <SearchContent searchParams={searchParams} />
       </Suspense>
     </PageContainer>
