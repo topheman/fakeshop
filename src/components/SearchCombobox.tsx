@@ -76,30 +76,28 @@ export default function SearchCombobox({ initialQuery = "" }) {
           onChange={handleChange}
           onClose={() => setQuery("")}
         >
-          <div className="relative">
-            <div
-              className={cn(
-                "relative w-full cursor-default rounded-lg overflow-hidden bg-white text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm",
-                query === "" ? "" : "sm:rounded-b-none",
-              )}
-            >
-              <ComboboxInput<Product>
-                className="w-full rounded-lg border-none bg-white py-2 pl-3 pr-10 text-[16px] leading-5 text-gray-900 focus:outline-none focus:ring-0 sm:text-sm md:min-w-[400px]"
-                displayValue={() => {
-                  // If there's a selected product, show empty string (cleared input)
-                  if (selectedProduct) return "";
-                  // Otherwise show the search query
-                  return query;
-                }}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search products..."
-                name="q"
-                ref={inputRef}
-              />
-              <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
-                <Search className="size-5 text-gray-400" aria-hidden="true" />
-              </ComboboxButton>
-            </div>
+          <div
+            className={cn(
+              "w-full cursor-default rounded-lg bg-white sm:text-sm",
+              query === "" ? "" : "sm:rounded-b-none",
+            )}
+          >
+            <ComboboxInput<Product>
+              className="w-full rounded-lg border-none bg-white py-2 pl-3 pr-10 text-[16px] leading-5 text-gray-900 focus:outline-none focus:ring-0 sm:text-sm md:min-w-[400px]"
+              displayValue={() => {
+                // If there's a selected product, show empty string (cleared input)
+                if (selectedProduct) return "";
+                // Otherwise show the search query
+                return query;
+              }}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search products..."
+              name="q"
+              ref={inputRef}
+            />
+            <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
+              <Search className="size-5 text-gray-400" aria-hidden="true" />
+            </ComboboxButton>
           </div>
 
           {query === "" ? null : (

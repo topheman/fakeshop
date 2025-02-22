@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import SearchCombobox from "./SearchCombobox";
+import SearchComboboxSkeleton from "./SearchComboboxSkeleton";
 import ShoppingCart from "./ShoppingCart";
 import UserIcon from "./UserIcon";
 
@@ -17,13 +18,17 @@ export default function Header({ mode }: { mode?: "shop" | "checkout" }) {
           <span>Fake</span>
           <span>Shop</span>
         </Link>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<SearchComboboxSkeleton />}>
           <SearchCombobox />
         </Suspense>
         <nav className="mr-[10px] mt-[10px]">
           <ul className="flex space-x-2 md:space-x-4">
             <li>
-              <Suspense fallback={<User />}>
+              <Suspense
+                fallback={
+                  <User data-prerender-hint="default icon prerendered" />
+                }
+              >
                 <UserIcon />
               </Suspense>
             </li>
