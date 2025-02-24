@@ -1,30 +1,11 @@
+import { redirect } from "next/navigation";
 import { Fragment, Suspense } from "react";
 
-import { getCart } from "@/actions/session";
+import { getCart, order } from "@/actions/session";
 import { PageContainer } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { getProduct } from "@/lib/api";
-
-const paymentMethods = [
-  {
-    id: "stripe",
-    name: "Credit Card",
-    icon: "💳",
-    description: "Don't pay anything with Stripe",
-  },
-  {
-    id: "paypal",
-    name: "PayPal",
-    icon: "🌐",
-    description: "Safe and secure payment - no payment required",
-  },
-  {
-    id: "apple-pay",
-    name: "Apple Pay",
-    icon: "🍎",
-    description: "Quick and secure checkout - everything is free",
-  },
-];
+import { PAYMENT_METHODS } from "@/utils/payment";
 
 async function OrderContent() {
   const cart = await getCart();
@@ -48,6 +29,12 @@ async function OrderContent() {
     return sum + (product?.price || 0) * item.quantity;
   }, 0);
 
+  const handleOrder = async (formData: FormData) => {
+    "use server";
+    await order(formData);
+    redirect("/account");
+  };
+
   return (
     <Fragment>
       <h1 className="mb-8 text-3xl font-bold">Payment</h1>
@@ -63,9 +50,9 @@ async function OrderContent() {
         <h2 className="mb-6 text-xl font-semibold">
           Select Fake Payment Method
         </h2>
-        <form action="/api/pay" className="space-y-4">
+        <form action={handleOrder} className="space-y-4">
           <input type="hidden" name="amount" value={total} />
-          {paymentMethods.map((method) => (
+          {PAYMENT_METHODS.map((method) => (
             <label
               key={method.id}
               className="block cursor-pointer rounded-lg border p-4 transition-colors hover:border-gray-400 [&:has(input:checked)]:border-blue-500 [&:has(input:checked)]:bg-blue-50"

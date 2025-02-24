@@ -12,14 +12,19 @@ export function middleware(request: NextRequest) {
     response.cookies.set({
       name: "cart",
       value: JSON.stringify({
-        // temporary adding 2 items to the cart
-        items: [
-          {
-            id: 1,
-            quantity: 1,
-          },
-        ],
+        items: [],
       }),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: COOKIE_MAX_AGE,
+    });
+  }
+
+  if (!request.cookies.has("orders")) {
+    response.cookies.set({
+      name: "orders",
+      value: JSON.stringify([]),
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",

@@ -4,8 +4,9 @@ import { cookies } from "next/headers";
 
 import { prepareCart } from "@/utils/cart";
 import { COOKIE_MAX_AGE } from "@/utils/constants";
+import { PaymentType } from "@/utils/payment";
 
-import type { Cart, UserInfos } from "./types";
+import type { Cart, Order, UserInfos } from "./types";
 
 export async function getUserInfos(): Promise<UserInfos | null> {
   const cookieStore = await cookies();
@@ -86,4 +87,46 @@ export async function updateCart({
 export async function clearCart(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete("cart");
+}
+
+export async function getOrders(): Promise<Order[]> {
+  const cookieStore = await cookies();
+  const orders = cookieStore.get("orders");
+  if (orders) {
+    try {
+      return JSON.parse(orders.value);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+export async function setOrders(orders: Order[]): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set({
+    name: "orders",
+    value: JSON.stringify(orders),
+  });
+}
+
+export async function order(formData: FormData) {
+  const cart = await getCart();
+  if (!cart || cart.items.length === 0) {
+    return { error: "Cart is empty" };
+  }
+
+  const paymentMethod = formData.get("paymentMethod");
+  if (!paymentMethod) {
+    return { error: "Payment method is required" };
+  }
+
+  const orders = await getOrders();
+  orders.push({
+    date: new Date(),
+    paymentMethod: paymentMethod as PaymentType,
+    amount: Number(formData.get("amount")),
+  });
+  await setOrders(orders);
+  await clearCart();
 }

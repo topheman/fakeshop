@@ -12,3 +12,9 @@ export interface Cart {
     quantity: number;
   }>;
 }
+
+export interface Order {
+  date: Date;
+  paymentMethod: string;
+  amount: number;
+}
