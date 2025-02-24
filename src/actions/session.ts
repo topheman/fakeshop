@@ -1,10 +1,11 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { z } from "zod";
 
 import { prepareCart } from "@/utils/cart";
 import { COOKIE_MAX_AGE } from "@/utils/constants";
-import { PaymentType } from "@/utils/payment";
+import { PaymentType, PAYMENT_METHODS } from "@/utils/payment";
 
 import type { Cart, Order, UserInfos } from "./types";
 
@@ -110,23 +111,54 @@ export async function setOrders(orders: Order[]): Promise<void> {
   });
 }
 
+// Create a schema for the payment method validation
+const paymentMethodSchema = z.enum(
+  PAYMENT_METHODS.map((method) => method.id as PaymentType) as [
+    PaymentType,
+    ...PaymentType[],
+  ],
+);
+
+// Create a schema for the order form data
+const orderFormSchema = z.object({
+  paymentMethod: paymentMethodSchema,
+  amount: z.coerce.number().positive(),
+});
+
 export async function order(formData: FormData) {
+  // First validate the cart
   const cart = await getCart();
   if (!cart || cart.items.length === 0) {
     return { error: "Cart is empty" };
   }
 
-  const paymentMethod = formData.get("paymentMethod");
-  if (!paymentMethod) {
-    return { error: "Payment method is required" };
-  }
+  try {
+    // Validate and parse the form data
+    const validatedData = orderFormSchema.parse({
+      paymentMethod: formData.get("paymentMethod"),
+      amount: formData.get("amount"),
+    });
 
-  const orders = await getOrders();
-  orders.push({
-    date: new Date(),
-    paymentMethod: paymentMethod as PaymentType,
-    amount: Number(formData.get("amount")),
-  });
-  await setOrders(orders);
-  await clearCart();
+    const orders = await getOrders();
+    orders.push({
+      date: new Date(),
+      paymentMethod: validatedData.paymentMethod,
+      amount: validatedData.amount,
+    });
+    await setOrders(orders);
+    await clearCart();
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        error: "Invalid form data",
+        details: error.errors.map((err) => ({
+          field: err.path.join("."),
+          message: err.message,
+        })),
+      };
+    }
+    return { error: "An unexpected error occurred" };
+  }
 }
