@@ -9,8 +9,33 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FakeShop",
+  title: "FakeShop - by topheman",
   description: "A demo e-commerce site built with Next.js 15",
+  metadataBase: new URL("https://thefakeshop.vercel.app"),
+  openGraph: {
+    title: "FakeShop - by topheman",
+    description: "A demo e-commerce site built with Next.js 15 latest features",
+    url: "https://thefakeshop.vercel.app",
+    siteName: "FakeShop",
+    locale: "en_US",
+    type: "website",
+    images: [
+      {
+        url: "/api/og",
+        width: 1200,
+        height: 630,
+        alt: "A demo e-commerce site built with Next.js 15 latest features",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FakeShop - by topheman",
+    description: "A demo e-commerce site built with Next.js 15 latest features",
+    images: ["/api/og"],
+    creator: "@topheman",
+    site: "@topheman",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico" },
