@@ -32,7 +32,7 @@ async function OrderContent() {
   const handleOrder = async (formData: FormData) => {
     "use server";
     await order(formData);
-    redirect("/account");
+    redirect("/account?scrollTo=order-history");
   };
 
   return (

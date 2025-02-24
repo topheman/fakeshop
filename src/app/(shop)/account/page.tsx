@@ -3,9 +3,12 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { logout } from "@/actions/auth";
-import { getUserInfos } from "@/actions/session";
+import { getUserInfos, getOrders } from "@/actions/session";
 import { PageContainer } from "@/components/Layout";
+import { ScrollTo } from "@/components/ScrollTo";
 import { Button } from "@/components/ui/button";
+import { getLanguage } from "@/utils/language";
+import { PAYMENT_METHODS } from "@/utils/payment";
 
 export const metadata: Metadata = {
   title: "My Account - FakeShop",
@@ -15,6 +18,8 @@ export const metadata: Metadata = {
 // Async child component
 async function AccountContent() {
   const userInfos = await getUserInfos();
+  const orders = await getOrders();
+  const language = await getLanguage();
 
   // Redirect to login if not authenticated
   if (!userInfos) {
@@ -23,6 +28,7 @@ async function AccountContent() {
 
   return (
     <>
+      <ScrollTo />
       <h1 className="mb-6 text-3xl font-bold text-primary">My Account</h1>
 
       <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -70,6 +76,45 @@ async function AccountContent() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="mt-8" id="order-history">
+          <h2 className="mb-4 text-xl font-semibold">Order History</h2>
+          {orders.length === 0 ? (
+            <p className="text-muted-foreground">No orders yet</p>
+          ) : (
+            <div className="space-y-4">
+              {orders.map((order, index) => {
+                const paymentMethod = PAYMENT_METHODS.find(
+                  (method) => method.id === order.paymentMethod,
+                );
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between rounded-lg border p-4"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        Order from{" "}
+                        <time dateTime={new Date(order.date).toISOString()}>
+                          {new Intl.DateTimeFormat(language).format(
+                            new Date(order.date),
+                          )}
+                        </time>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Payment Method:{" "}
+                        {paymentMethod?.name || order.paymentMethod}
+                      </p>
+                    </div>
+                    <p className="text-lg font-semibold">
+                      ${order.amount.toFixed(2)}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="mt-8 flex justify-end">
