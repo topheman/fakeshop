@@ -183,8 +183,8 @@ async function CheckoutContent() {
               </span>
             </div>
 
-            <Button className="w-full" size="lg">
-              Place Order
+            <Button className="w-full" size="lg" asChild>
+              <Link href="/order">Place Order</Link>
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
