@@ -91,7 +91,7 @@ export function Cart() {
                           <Button
                             variant="outline"
                             size="icon"
-                            className="size-8"
+                            className="size-8 select-none"
                             onClick={() =>
                               handleUpdateCart(product.id, item.quantity - 1)
                             }
@@ -104,7 +104,7 @@ export function Cart() {
                           <Button
                             variant="outline"
                             size="icon"
-                            className="size-8"
+                            className="size-8 select-none"
                             onClick={() =>
                               handleUpdateCart(product.id, item.quantity + 1)
                             }
@@ -120,7 +120,7 @@ export function Cart() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-8"
+                      className="size-8 select-none"
                       onClick={() => handleUpdateCart(product.id, null)}
                     >
                       <X className="size-4" />
