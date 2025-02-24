@@ -4,7 +4,14 @@ import { redirect } from "next/navigation";
 
 import { isIssuedByJS } from "@/utils/actions";
 
-import { clearUserInfos, setUserInfos, getUserInfos, getCart } from "./session";
+import {
+  clearUserInfos,
+  setUserInfos,
+  getUserInfos,
+  getCart,
+  clearOrders,
+  clearCart,
+} from "./session";
 import { createUserInfos } from "./sessionUtils";
 import type { Cart, UserInfos } from "./types";
 
@@ -32,10 +39,12 @@ export async function login(formData: FormData): Promise<void> {
   }
 }
 
-export async function logout(formData: FormData): Promise<void> {
-  console.log("logout", formData);
+export async function logout(): Promise<void> {
+  console.log("logout");
   try {
     await clearUserInfos();
+    await clearCart();
+    await clearOrders();
   } catch (error) {
     console.error("Error in logout:", error);
     throw new Error("Failed to clear session");

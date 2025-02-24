@@ -111,6 +111,11 @@ export async function setOrders(orders: Order[]): Promise<void> {
   });
 }
 
+export async function clearOrders(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete("orders");
+}
+
 // Create a schema for the payment method validation
 const paymentMethodSchema = z.enum(
   PAYMENT_METHODS.map((method) => method.id as PaymentType) as [
