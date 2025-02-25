@@ -115,9 +115,8 @@ async function AccountContent() {
             </div>
           )}
         </div>
-
-        <LogoutButton />
       </div>
+      <LogoutButton />
     </>
   );
 }
