@@ -15,16 +15,14 @@ export function LogoutButton() {
   }
 
   return (
-    <div className="mt-8 flex justify-end">
-      <form action={handleLogout}>
-        <Button
-          type="submit"
-          variant="outline"
-          className="text-destructive hover:bg-destructive/10"
-        >
-          Sign Out
-        </Button>
-      </form>
-    </div>
+    <form action={handleLogout}>
+      <Button
+        type="submit"
+        variant="outline"
+        className="text-destructive hover:bg-destructive/10"
+      >
+        Sign Out
+      </Button>
+    </form>
   );
 }

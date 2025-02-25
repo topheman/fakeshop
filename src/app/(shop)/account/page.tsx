@@ -1,4 +1,6 @@
+import { Home } from "lucide-react";
 import { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
@@ -6,6 +8,7 @@ import { getUserInfos, getOrders } from "@/actions/session";
 import { PageContainer } from "@/components/Layout";
 import { LogoutButton } from "@/components/LogoutButton";
 import { ScrollTo } from "@/components/ScrollTo";
+import { Button } from "@/components/ui/button";
 import { getLanguage } from "@/utils/language";
 import { PAYMENT_METHODS } from "@/utils/payment";
 
@@ -116,7 +119,15 @@ async function AccountContent() {
           )}
         </div>
       </div>
-      <LogoutButton />
+      <div className="mt-8 flex justify-between">
+        <Button asChild>
+          <Link href="/" title="Back Home">
+            <Home className="mr-2 size-4" />
+            Home
+          </Link>
+        </Button>
+        <LogoutButton />
+      </div>
     </>
   );
 }
