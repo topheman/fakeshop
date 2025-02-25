@@ -1,11 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Fragment, Suspense } from "react";
 
-import { getUserInfos, getCart } from "@/actions/session";
+import { getUserInfos, getCart, order } from "@/actions/session";
 import { PageContainer } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { getProduct } from "@/lib/api";
+import { PAYMENT_METHODS } from "@/utils/payment";
 import { generateProductSlug } from "@/utils/slugUtils";
 
 // Async child component
@@ -17,6 +19,16 @@ async function CheckoutContent() {
     cart?.items && cart?.items.length > 0
       ? await Promise.all(cart?.items.map((item) => getProduct(item.id)))
       : [];
+
+  const total = (
+    cart?.items
+      ? cart.items.reduce(
+          (total, item, index) =>
+            total + productsInCart[index].price * item.quantity,
+          0,
+        )
+      : 0
+  ).toFixed(2);
 
   if (!userInfos) {
     return (
@@ -109,9 +121,42 @@ async function CheckoutContent() {
 
           <div className="rounded-lg border bg-card p-6">
             <h2 className="mb-4 text-xl font-semibold">Payment Method</h2>
-            <p className="text-muted-foreground">
-              This is a demo store. No actual payment will be processed.
-            </p>
+            <form
+              action={async (formData: FormData) => {
+                "use server";
+                await order(formData);
+                redirect("/account?scrollTo=order-history");
+              }}
+              className="space-y-4"
+            >
+              <input type="hidden" name="amount" value={total} />
+              {PAYMENT_METHODS.map((method) => (
+                <label
+                  key={method.id}
+                  className="block cursor-pointer rounded-lg border p-4 transition-colors hover:border-gray-400 [&:has(input:checked)]:border-blue-500 [&:has(input:checked)]:bg-blue-50"
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value={method.id}
+                    className="sr-only"
+                    required
+                  />
+                  <div className="flex items-center space-x-4">
+                    <span className="text-2xl">{method.icon}</span>
+                    <div>
+                      <div className="font-medium">{method.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {method.description}
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              ))}
+              <Button type="submit" className="mt-8 w-full" size="lg">
+                Pay ${total}
+              </Button>
+            </form>
           </div>
         </div>
 
@@ -154,16 +199,7 @@ async function CheckoutContent() {
           <div className="mt-6 space-y-4">
             <div className="flex items-center justify-between border-t pt-4">
               <span className="font-medium">Subtotal</span>
-              <span className="font-medium">
-                $
-                {cart.items
-                  .reduce(
-                    (total, item, index) =>
-                      total + productsInCart[index].price * item.quantity,
-                    0,
-                  )
-                  .toFixed(2)}
-              </span>
+              <span className="font-medium">${total}</span>
             </div>
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>Shipping</span>
@@ -171,21 +207,8 @@ async function CheckoutContent() {
             </div>
             <div className="flex items-center justify-between border-t pt-4 text-lg font-bold">
               <span>Total</span>
-              <span>
-                $
-                {cart.items
-                  .reduce(
-                    (total, item, index) =>
-                      total + productsInCart[index].price * item.quantity,
-                    0,
-                  )
-                  .toFixed(2)}
-              </span>
+              <span>${total}</span>
             </div>
-
-            <Button className="w-full" size="lg" asChild>
-              <Link href="/order">Place Order</Link>
-            </Button>
 
             <p className="text-center text-sm text-muted-foreground">
               By placing your order, you agree to our{" "}
