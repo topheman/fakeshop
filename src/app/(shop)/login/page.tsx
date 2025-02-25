@@ -27,6 +27,12 @@ async function LoginContent({
     redirect(redirectTo || "/");
   }
 
+  async function loginWithRedirect(formData: FormData) {
+    "use server";
+    await login(formData);
+    redirect(redirectTo || "/");
+  }
+
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="text-center">
@@ -41,7 +47,7 @@ async function LoginContent({
         </p>
       </div>
 
-      <form action={login} className="mt-8 space-y-6">
+      <form action={loginWithRedirect} className="mt-8 space-y-6">
         <Button type="submit" className="w-full px-4 py-3">
           Fake Login
         </Button>
