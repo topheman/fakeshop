@@ -31,7 +31,17 @@ async function fetchApi<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(`${BASE_URL}${endpoint}`, options);
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    /**
+     * The data is static, so we can cache it indefinitely.
+     * In a real project, you would use some redis cache and
+     * a revalidation strategy like stale-while-revalidate.
+     *
+     * This is a nextjs specific option. - https://nextjs.org/docs/app/api-reference/functions/fetch
+     */
+    cache: "force-cache",
+    ...options,
+  });
   if (!res.ok) {
     throw new Error(`API request failed: ${res.statusText}`);
   }
