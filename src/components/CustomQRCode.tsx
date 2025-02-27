@@ -10,6 +10,12 @@ interface CustomQRCodeProps {
 
 export default async function CustomQRCode({ payload }: CustomQRCodeProps) {
   "use cache";
+  /**
+   * The "use cache" directive is necessary when the component is async
+   * AND not wrapped in a <Suspense> component.
+   * That way, the component is rendered ONCE at build time, its html
+   * included directly in the parent (no loading state).
+   */
   console.log("  CustomQRCode");
   const qrCodeDataUrl = await generateQRCode(payload);
 

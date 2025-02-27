@@ -45,9 +45,7 @@ export default function Home() {
         </Link>
       </div>
       <div className="mt-6">
-        <Suspense fallback={<div>Loading...</div>}>
-          <CustomQRCode payload="https://thefakeshop.vercel.app/" />
-        </Suspense>
+        <CustomQRCode payload="https://thefakeshop.vercel.app/" />
       </div>
     </PageContainer>
   );
