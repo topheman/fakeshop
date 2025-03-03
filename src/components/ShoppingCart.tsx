@@ -4,7 +4,7 @@ import { ShoppingCartIcon } from "lucide-react";
 
 import { useCart, useCartDisplay } from "@/hooks/cart";
 
-export default function ShoppingCart() {
+export function ShoppingCart() {
   const cart = useCart();
   const { setIsOpen } = useCartDisplay();
 

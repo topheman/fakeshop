@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { getUserInfos } from "@/actions/session";
 
-export default async function UserIcon() {
+export async function UserIcon() {
   const userInfos = await getUserInfos();
 
   return (

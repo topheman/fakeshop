@@ -2,8 +2,8 @@ import { Suspense } from "react";
 
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { PageContainer } from "@/components/Layout";
-import ProductGrid from "@/components/ProductGrid";
-import ProductGridLoading from "@/components/ProductGridLoading";
+import { ProductGrid } from "@/components/ProductGrid";
+import { ProductGridLoading } from "@/components/ProductGridLoading";
 import { getProductsByCategory } from "@/lib/api";
 import { slugToDisplayName } from "@/utils/slugUtils";
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { slugToDisplayName } from "@/utils/slugUtils";
 
-import ProductGridSkeleton from "./ProductGridSkeleton";
+import { ProductGridSkeleton } from "./ProductGridSkeleton";
 
 export const experimental_ppr = false;
 
@@ -14,7 +14,7 @@ export const experimental_ppr = false;
  * It will find the title of the page based on the pathname/search params at
  * runtime, client side.
  */
-export default function ProductGridLoading() {
+export function ProductGridLoading() {
   const [title, setTitle] = useState("Loading ...");
 
   /**

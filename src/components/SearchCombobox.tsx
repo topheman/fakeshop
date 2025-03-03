@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 import { generateProductSlug } from "@/utils/slugUtils";
 
-export default function SearchCombobox({ initialQuery = "" }) {
+export function SearchCombobox({ initialQuery = "" }) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [query, setQuery] = useState(initialQuery);
   const router = useRouter();

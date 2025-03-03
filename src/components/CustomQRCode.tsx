@@ -8,7 +8,7 @@ interface CustomQRCodeProps {
   payload: string;
 }
 
-export default async function CustomQRCode({ payload }: CustomQRCodeProps) {
+export async function CustomQRCode({ payload }: CustomQRCodeProps) {
   "use cache";
   /**
    * The "use cache" directive is necessary when the component is async

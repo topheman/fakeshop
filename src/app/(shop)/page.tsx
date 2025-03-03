@@ -2,8 +2,8 @@ import { Github, User } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import CategoryList from "@/components/CategoryList";
-import CustomQRCode from "@/components/CustomQRCode";
+import { CategoryList } from "@/components/CategoryList";
+import { CustomQRCode } from "@/components/CustomQRCode";
 import { PageContainer } from "@/components/Layout";
 
 export default function Home() {

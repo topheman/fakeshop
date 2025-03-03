@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 
 import { PageContainer } from "@/components/Layout";
-import ProductGridLoading from "@/components/ProductGridLoading";
-import SearchResults from "@/components/SearchResults";
+import { ProductGridLoading } from "@/components/ProductGridLoading";
+import { SearchResults } from "@/components/SearchResults";
 
 // Async child component
 async function SearchContent({

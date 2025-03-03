@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 import { Cart } from "./Cart";
 import Footer from "./Footer";
-import Header from "./Header";
+import { Header } from "./Header";
 
 export function Layout({
   children,

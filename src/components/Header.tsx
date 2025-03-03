@@ -2,12 +2,12 @@ import { User } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import SearchCombobox from "./SearchCombobox";
-import SearchComboboxSkeleton from "./SearchComboboxSkeleton";
-import ShoppingCart from "./ShoppingCart";
-import UserIcon from "./UserIcon";
+import { SearchCombobox } from "./SearchCombobox";
+import { SearchComboboxSkeleton } from "./SearchComboboxSkeleton";
+import { ShoppingCart } from "./ShoppingCart";
+import { UserIcon } from "./UserIcon";
 
-export default function Header({ mode }: { mode?: "shop" | "checkout" }) {
+export function Header({ mode }: { mode?: "shop" | "checkout" }) {
   return (
     <header className="bg-primary p-2 text-white">
       <div className="container mx-auto flex items-center justify-between">

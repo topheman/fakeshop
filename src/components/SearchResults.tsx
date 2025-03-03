@@ -1,9 +1,9 @@
 import { searchProducts } from "@/lib/api";
 import type { Product } from "@/types";
 
-import ProductGrid from "./ProductGrid";
+import { ProductGrid } from "./ProductGrid";
 
-export default async function SearchResults({
+export async function SearchResults({
   query: initialQuery,
 }: {
   query: string;
