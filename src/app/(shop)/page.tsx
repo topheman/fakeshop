@@ -10,19 +10,32 @@ export default function Home() {
   console.log("* Home");
   return (
     <PageContainer>
-      <h1 className="mb-4 text-4xl font-bold text-primary">
+      <h1 className="mb-4 text-3xl font-bold text-primary md:text-4xl">
         Welcome to FakeShop
       </h1>
       <p className="mb-4">
         FakeShop is a demo e-commerce website built with Next.js 15, where I
         test the latest features of the framework, like:
       </p>
-      <ul className="list-disc space-y-2 pl-8 leading-4">
+      <ul className="mb-4 list-disc space-y-2 pl-8 leading-4">
         <li>React Server Components</li>
         <li>Server actions</li>
         <li>Progressive enhancement</li>
         <li>Streaming</li>
       </ul>
+      <p>
+        Enjoy the demo and{" "}
+        <a
+          href="https://dev.to/topheman/react-server-components-in-practice-building-a-fake-e-commerce-site-with-nextjs-15-latest-features-73p"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline hover:text-primary/80"
+          title="React Server Components in Practice: Building a fake E-commerce Site with Next.js 15 latest features"
+        >
+          read the article I wrote on dev.to
+        </a>{" "}
+        for more details about the project.
+      </p>
       <Suspense fallback={<div>Loading...</div>}>
         <CategoryList />
       </Suspense>
