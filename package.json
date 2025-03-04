@@ -2,6 +2,13 @@
   "name": "fakeshop",
   "version": "0.1.0",
   "private": true,
+  "keywords": [
+    "nextjs",
+    "react",
+    "server-components",
+    "server-actions",
+    "react-query"
+  ],
   "scripts": {
     "dev": "next dev",
     "scan": "NEXT_PUBLIC_ENABLE_SCAN=true npm run dev",
