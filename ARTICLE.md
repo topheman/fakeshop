@@ -1,6 +1,6 @@
 ---
 title: React Server Components in Practice: Building a fake E-commerce Site with Next.js 15 latest features
-published: false
+published: true
 description: Discover how to use the latest features of Next.js 15 to build a fake e-commerce site with React Server Components and Server Actions.
 tags: nextjs, react, servercomponents, serveractions
 cover_image: https://dev-to-uploads.s3.amazonaws.com/uploads/articles/elieepx6q62vibxz0qiv.png
@@ -8,7 +8,7 @@ cover_image: https://dev-to-uploads.s3.amazonaws.com/uploads/articles/elieepx6q6
 # published_at: 2025-03-04 13:06 +0000
 ---
 
-[See the demo here](https://thefakeshop.vercel.app/) - [See the source code here](https://github.com/topheman/fakeshop)
+[👀 See the demo here](https://thefakeshop.vercel.app/) - [👨‍💻 See the source code here](https://github.com/topheman/fakeshop)
 
 For the last 18 months, in the react ecosystem, we have been witnessing the rise of server components.
 
@@ -55,7 +55,7 @@ This is why I decided to build a real project to experiment on those new feature
 
 ## Features of the project
 
-[See the demo here](https://thefakeshop.vercel.app/) - [See the source code here](https://github.com/topheman/fakeshop)
+[👀 See the demo here](https://thefakeshop.vercel.app/) - [👨‍💻 See the source code here](https://github.com/topheman/fakeshop)
 
 It's a fake e-commerce website, that allows you to:
 
