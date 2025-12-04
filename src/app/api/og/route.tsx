@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text, @next/next/no-img-element */
 import { ImageResponse } from "@vercel/og";
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
   const bytes = new Uint8Array(buffer);
