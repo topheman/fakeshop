@@ -1,6 +1,5 @@
 const config = {
-  "*.{js,jsx,ts,tsx}": ["eslint --fix"],
-  "*.{js,jsx,ts,tsx}": ["vitest related --run"],
+  "*.{js,jsx,ts,tsx,mjs}": ["eslint --fix", "vitest related --run"],
   "*.{ts,tsx}": () => "tsc -p tsconfig.json --noEmit",
 };
 

@@ -11,9 +11,7 @@ server actions, streaming, and progressive enhancement.
 ## Installation
 
 ```bash
-# Since using react 19, some packages have not yet extended there range of supported versions.
-# We need to install all the packages with the --force flag.
-npm install --force
+npm install
 ```
 
 ## Running

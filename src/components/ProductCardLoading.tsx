@@ -1,26 +1,29 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 import { slugToDisplayName } from "@/utils/slugUtils";
 
-export function ProductCardLoading() {
-  const [title, setTitle] = useState("Loading...");
+/** The URL never changes while this fallback is on screen, so there is nothing to subscribe to. */
+const subscribe = () => () => {};
 
-  useEffect(() => {
-    const pathname = window.location.pathname;
-    if (pathname.startsWith("/product/")) {
-      const slug = pathname.split("/").pop();
-      if (slug) {
-        // Remove the ID from the slug to get a readable title
-        const displayTitle = slugToDisplayName(
-          slug.split("-").slice(0, -1).join("-"),
-        );
-        setTitle(displayTitle);
-      }
+const getServerTitle = () => "Loading...";
+
+function getClientTitle() {
+  const pathname = window.location.pathname;
+  if (pathname.startsWith("/product/")) {
+    const slug = pathname.split("/").pop();
+    if (slug) {
+      // Remove the ID from the slug to get a readable title
+      return slugToDisplayName(slug.split("-").slice(0, -1).join("-"));
     }
-  }, []);
+  }
+  return getServerTitle();
+}
+
+export function ProductCardLoading() {
+  const title = useSyncExternalStore(subscribe, getClientTitle, getServerTitle);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2">
