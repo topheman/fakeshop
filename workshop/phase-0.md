@@ -127,12 +127,124 @@ Phase 0's job is to make the repo's own signals trustworthy, and CI is how that 
 
 So the flat config lands here, with the CI workflow that depends on it. Phase 2 keeps TypeScript 7, the Turbopack bundle analyzer and the open Tailwind 4 question.
 
-## Task list
+## Concepts
 
-- [x] Record the before state
-- [ ] ESLint 8 with `.eslintrc.json` to ESLint 9 flat config, `next lint` to `eslint`
-- [ ] `.nvmrc` from Node 22 to 24.20.0
-- [ ] Fix the duplicate key in `lint-staged.config.js`
-- [ ] `lucide-react` 0.344.0 to 1.39.0, drop `--force` from the README
-- [ ] Remove `eslint` and `typescript` escape hatches from `next.config.mjs`
-- [ ] Add the CI workflow
+### Why `next lint` is gone
+
+Next used to ship a lint command that wrapped ESLint, resolved a config for you, and could be run as part of `next build` and configured through the `eslint` key in `next.config.mjs`. Next 16 removed all three. The reasoning is that ESLint's own flat config made the wrapper redundant: a flat config is a plain JavaScript module that imports configs as values, so a framework no longer needs to inject a resolver to tell ESLint where `eslint-config-next` lives. You import it yourself.
+
+The knock-on effect is that linting is no longer a build step at all. `next build` compiles and type checks; linting is a separate command you run in CI. That is why `eslint.ignoreDuringBuilds` no longer has anything to ignore.
+
+### `.eslintrc.json` to `eslint.config.mjs`
+
+The two formats differ in more than syntax. In eslintrc, `extends` is a string of a package name that ESLint resolves through a search path, config merging is a bespoke algorithm, and a `plugins` entry names a package that ESLint locates on your behalf. In flat config, a config is an array of plain objects, `extends` becomes spreading an imported array, plugins are objects you import and hold, and merging is just array order: later entries override earlier ones for files they both match.
+
+That last point produced the one behavioural change in this migration. The old `.eslintrc.json` listed `plugin:prettier/recommended` **first** in `extends`, so every config after it could re-enable a formatting rule that Prettier's config had just turned off. Flat config makes the ordering explicit and the fix obvious: `prettierRecommended` now sits last, after the Next and Tailwind configs, which is where it has always been meant to go.
+
+`eslint-config-next@16` exports flat config arrays from three subpaths. `eslint-config-next/core-web-vitals` carries the Next rules, the plugin registrations for `react`, `react-hooks`, `import`, `jsx-a11y` and `@next/next`, and a default `ignores` for `.next/**`, `out/**`, `build/**` and `next-env.d.ts`. `eslint-config-next/typescript` carries the `typescript-eslint` recommended rules. The old config extended both, so the new one spreads both.
+
+### Why ESLint 9 and not 10
+
+ESLint 10 is out and npm even warns that 9.39.5 is past support. We are on 9 anyway, because `eslint-config-next@16.1.6` depends on `eslint-plugin-import@^2.32.0`, and that plugin's peer range still stops at `eslint ^9`. Installing ESLint 10 would produce exactly the `ERESOLVE` this phase exists to eliminate. Next's own config package is the constraint, so this resolves itself when `eslint-plugin-import` widens its range or Next drops the dependency; it is worth rechecking at phase 2.
+
+## What the lint run found
+
+Turning on a linter that had never run produced eight errors, and none of them were style.
+
+### `react-hooks/error-boundaries` in the category page
+
+`CategoryContent` wrapped both its `await` and its returned JSX in a single `try`/`catch`. That reads as if it catches render errors, and it does not. Constructing JSX only creates a description object; React renders it later, outside the stack frame the `try` is guarding. A fetch rejection is caught, but an error thrown inside `ProductGrid` while rendering escapes untouched.
+
+The fix in this phase is minimal on purpose: narrow the `try` to the `await` alone and return the JSX after it, which is what the code always meant. Replacing the whole thing with a `catchError` boundary is phase 5.
+
+### `react-hooks/set-state-in-effect` in the two loading components
+
+`ProductGridLoading` and `ProductCardLoading` both derive a heading from the URL. Both did it by rendering a placeholder, then reading `window.location` in a `useEffect` and calling `setState`. That is a mount, a paint, and a second render every time a loading shell appears — cascading renders in the exact component whose job is to appear fast.
+
+They were written that way for a real reason, recorded in the original comment: reading the URL through `useRouter` makes the prerender fail, and the value genuinely differs between server and client, so computing it during render would be a hydration mismatch.
+
+`useSyncExternalStore` is the API for precisely that shape. It takes three arguments: a `subscribe` function, a client `getSnapshot`, and a server `getServerSnapshot`. React calls the server snapshot during prerender and hydration, then the client snapshot afterwards, and it treats the difference as expected rather than as a mismatch. Here the URL does not change while a fallback is on screen, so `subscribe` returns a no-op unsubscribe and never fires. The result renders the real title in one pass with no effect and no second render.
+
+```tsx
+const subscribe = () => () => {};
+const getServerTitle = () => "Loading ...";
+
+export function ProductGridLoading() {
+  const title = useSyncExternalStore(subscribe, getClientTitle, getServerTitle);
+  // ...
+}
+```
+
+`subscribe` and `getServerTitle` are defined at module scope deliberately. React compares them by identity, so declaring them inside the component would re-subscribe on every render.
+
+### `lucide-react` v1 dropped brand icons
+
+The `Github` export no longer exists. Lucide removed its brand icons in v1 rather than keep shipping trademarked marks. Twelve files import from `lucide-react` and only the homepage broke, which `tsc` caught immediately. The mark now lives in `src/components/GithubIcon.tsx` as a local SVG with a lucide-shaped `size` prop.
+
+The plan said 1.39.0; 1.38.0 was the newest version available from the registry at install time, and it carries the same `react ^19` peer range, which is the property this phase needed.
+
+## The after state
+
+`npm run build`, cold, same machine:
+
+```
+⚠ Invalid next.config.mjs options detected:
+⚠     Unrecognized key(s) in object: 'dynamicIO' at "experimental"
+▲ Next.js 16.1.6 (Turbopack, Cache Components)
+...
+✓ Compiled successfully in 1213.7ms
+  Running TypeScript ...
+  Collecting page data using 13 workers ...
+✓ Generating static pages using 13 workers (11/11) in 403.0ms
+
+Route (app)           Revalidate  Expire
+┌ ◐ /                        15m      1y
+├ ◐ /_not-found
+├ ◐ /account
+├ ○ /api/hello/world
+├ ƒ /api/og
+├ ◐ /category/[slug]
+│ └ /category/[slug]
+├ ◐ /checkout
+├ ◐ /login
+├ ◐ /product/[slug]
+│ └ /product/[slug]
+└ ◐ /search
+
+npm run build  12.14s user 1.61s system 314% cpu 4.368s total
+```
+
+What changed and what did not:
+
+|                                        | Before                                   | After                |
+| -------------------------------------- | ---------------------------------------- | -------------------- |
+| Route table                            | 8 Partial Prerender, 1 static, 1 dynamic | identical            |
+| Static generation                      | 400.2ms                                  | 403.0ms              |
+| Type checking during build             | `Skipping validation of types`           | `Running TypeScript` |
+| Cold build wall clock                  | 3.267s                                   | 4.368s               |
+| `eslint` config warning                | present                                  | gone                 |
+| `tailwind.config.js` Turbopack warning | present                                  | gone                 |
+| `npm run lint`                         | crashes                                  | 0 errors, 0 warnings |
+| `npm ci`                               | fails without `--force`                  | exit 0               |
+
+**The route table is byte-identical**, which is the important result. Everything in this phase was supposed to be invisible to the running app, and it was.
+
+The build got about a second slower, and that is the honest price of the phase: `Running TypeScript` replaced `Skipping validation of types`, so the build now does work it previously refused to do. Phase 2's TypeScript 7 migration is where that second is likely to come back.
+
+Two warnings survive on purpose. `dynamicIO` is a dead flag and belongs to phase 1, which is where deleting it is the teaching moment. The middleware deprecation belongs to phase 3.
+
+## Key files
+
+- `eslint.config.mjs` — the whole flat config, replacing `.eslintrc.json`
+- `src/components/ProductGridLoading.tsx` — the `useSyncExternalStore` pattern, and the comment explaining why the URL is read as an external store
+- `src/app/(shop)/category/[slug]/page.tsx` — a `try`/`catch` that now catches what it claims to, until phase 5 replaces it
+- `.github/workflows/ci.yml` — install, lint, typecheck, test, build, on every PR
+- `lint-staged.config.js` — one glob key instead of two, so `eslint --fix` runs again
+
+## Learning outcomes
+
+- `next lint` and the `eslint` key in `next.config.mjs` were both removed in Next 16, and linting is no longer part of `next build` at all. A repo that only lints through `next build` silently stops linting on the upgrade.
+- Flat config resolves merge order by array position, which makes "Prettier last" enforceable rather than conventional.
+- `eslint-plugin-react-hooks@7` ships rules that catch design errors, not formatting: JSX constructed inside a `try`/`catch` does not have its render errors caught, and `setState` in an effect body costs a second render.
+- `useSyncExternalStore` is the sanctioned way to read a browser-only value that differs between server and client, without a hydration mismatch and without an effect.
+- Two build escape hatches looked equivalent and were not. `eslint.ignoreDuringBuilds` had been inert since the Next 16 bump; `typescript.ignoreBuildErrors` was the only one still suppressing real work.
