@@ -10,13 +10,6 @@ const nextConfig = {
     ],
   },
   cacheComponents: true,
-  experimental: {
-    dynamicIO: true,
-    // ppr: true,
-    webpackBuildWorker: true,
-    parallelServerBuildTraces: true,
-    parallelServerCompiles: true,
-  },
 };
 
 export default nextConfig;
