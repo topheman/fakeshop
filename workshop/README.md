@@ -25,7 +25,7 @@ Each phase document covers:
 ### Groundwork
 
 - [x] [Phase 0: Make the repo tell the truth](./phase-0.md)
-- [ ] Phase 1: Reach 16.3 and React 19.2
+- [x] [Phase 1: Reach 16.3 and React 19.2](./phase-1.md)
 - [ ] Phase 2: Toolchain
 - [ ] Phase 3: Middleware becomes proxy
 

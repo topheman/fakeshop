@@ -30,12 +30,12 @@ When a phase is done, write `workshop/phase-N.md` covering the concepts, what ch
 
 ## Tech stack
 
-- Next.js App Router, currently 16.1.6 installed against a `^16.0.11` range
-- React 19.0.4
+- Next.js App Router, 16.3.4, pinned exactly
+- React 19.2.8
 - TypeScript 5.7, Tailwind CSS 3.4, `shadcn/ui` components under `src/components/ui`
 - TanStack Query for the client-side search box
 - Vitest with React Testing Library
-- ESLint 8 with a legacy `.eslintrc.json`, Prettier as a plugin
+- ESLint 9 with a flat `eslint.config.mjs`, Prettier as a plugin
 - Data comes from the public `https://dummyjson.com` API, wrapped in `src/lib/api.ts`
 
 ## Guidelines
@@ -45,4 +45,14 @@ When a phase is done, write `workshop/phase-N.md` covering the concepts, what ch
 - Write tests for logic you add. The existing suite is thin, which is fine.
 - Format on save is on, pre-commit hooks run lint, format, tests and typecheck on staged files.
 - DO NOT start a dev server on your own. I will run it at http://localhost:3000.
-- `npm install` may still need `--force` until every dependency widens its React peer range. Check before assuming.
+- `npm install` resolves without `--force`. If it stops doing so, that is a regression worth investigating rather than working around.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
