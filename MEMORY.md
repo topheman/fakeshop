@@ -4,9 +4,9 @@
 
 ## Current phase
 
-**Phase 3: Middleware becomes proxy** — not started. Rename `src/middleware.ts` to `src/proxy.ts` and revisit what belongs there; the cookie seeding is the question, not the rename. Every build still prints the deprecation warning.
+**Phase 4: Cache Components properly** — not started. The heart of the workshop. Move `src/lib/api.ts` from `fetch(cache: "force-cache")` to `use cache` scopes with `cacheLife` profiles and `cacheTag` keys, then wire the cart and order mutations in `src/actions/` to invalidate the right tags.
 
-Phase 2 is done on branch `workshop/phase-2`. Phases 0, 1 and 2 are written up in `workshop/`.
+Phase 3 is done on branch `workshop/phase-3`. Phases 0, 1, 2 and 3 are written up in `workshop/`.
 
 ## Baseline as of 2026-09-02
 
@@ -32,6 +32,19 @@ Branch `workshop/phase-0`, merged in PR #4. Route table came out byte-identical,
 - `lucide-react` 0.344.0 to 1.38.0. v1 dropped brand icons, so `Github` became a local `src/components/GithubIcon.tsx`.
 - `.nvmrc` to 24.20.0, `lint-staged.config.js` duplicate glob fixed, `tailwind.config.js` converted to ESM, `--force` dropped from the README.
 
+### Phase 3: Middleware becomes proxy
+
+Branch `workshop/phase-3`. Two commits: the codemod rename, then the deletion of the whole proxy. The cart default moved into `src/actions/session.ts`. Route table unchanged except that the `ƒ Proxy (Middleware)` line is gone. Full write-up in [`workshop/phase-3.md`](workshop/phase-3.md).
+
+- **The app now has no proxy at all.** That is the honest migration, not a shortcut. Next 16's own guidance is "last resort", and the rename exists to discourage the feature rather than to bless it. Proxy also defaults to the Node.js runtime from 16.0, and setting `runtime` in the config object throws.
+- **A proxy writes to the response; the render reads the request.** The seeding never helped the request that performed it, so a visitor's very first request still saw no cart cookie. It only appeared to work because the first request is a page view and the add-to-cart is a later one.
+- **Proxy runs before the filesystem.** The matcher excluded `api`, `_next/static`, `_next/image` and `favicon.ico`, but not `public/` — 15 of the 16 files there ran the proxy and came back with two `Set-Cookie` headers. `Set-Cookie` on a read makes a response uncacheable by a shared cache, which matters for phases 4 and 6.
+- **Server Actions are POSTs to the route they live on**, so a matcher that excludes a path silently removes proxy coverage from its actions. Reason enough never to put auth in a proxy.
+- **Two latent bugs came out with the seeding.** `updateCart` returned the cart it had *read*, correct only because `prepareCart` mutates in place — making `prepareCart` pure would have silently broken the optimistic cart UI in `src/hooks/cart.tsx`. And `setOrders` wrote the `orders` cookie with none of the `httpOnly`/`secure`/`sameSite`/`maxAge` attributes the seed had given it.
+- **`emptyCart()` is a function, not a constant**, for the same mutation reason: a shared constant would accumulate every visitor's items for the life of the server process.
+- `src/actions/__tests__/session.test.ts` mocks `next/headers` with an in-memory `Map`. Three of its four tests fail against the old code, verified by restoring the old body.
+- The build legend still prints `ƒ Proxy (Middleware)` while a proxy exists — hardcoded at `node_modules/next/dist/build/utils.js:499`, cosmetic only.
+
 ### Phase 2: Toolchain
 
 Branch `workshop/phase-2`. TypeScript 5.7.3 to 6.0.3 plus `typescript-native` (`npm:typescript@7.0.2`) side by side, the build's type check moved out to `vercel.json`, and the first run of the Turbopack bundle analyzer. No application code changed, route table byte-identical. Full write-up in [`workshop/phase-2.md`](workshop/phase-2.md).
@@ -54,7 +67,7 @@ Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 t
 - `next build` rewrote `tsconfig.json` to `moduleResolution: "bundler"` and calls it mandatory. Committed rather than reverted, since reverting only invites the next build to rewrite it.
 - `AGENTS.md` gained the managed `<!-- BEGIN:nextjs-agent-rules -->` block that `next dev` maintains from 16.3, pointing agents at the docs Next bundles at `node_modules/next/dist/docs/`. Committed on purpose: it regenerates on every dev run, so omitting it means a permanently dirty tree. Stale phase-0 facts in the same file were corrected.
 - `next` and `eslint-config-next` are now exact pins rather than caret ranges, which is what `next upgrade` writes.
-- Two build warnings survive on purpose: middleware deprecation (phase 3) and the `/api/og` prerender warning (phase 9).
+- Two build warnings survived on purpose at the time: middleware deprecation (removed in phase 3) and the `/api/og` prerender warning (phase 9, still open).
 
 ## Decisions
 
@@ -64,6 +77,8 @@ Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 t
 - **PR strategy**: one phase, one branch, one PR, straight to `master`. Not stacked. Merging to `master` deploys production, so every phase must leave the app deployable, and CI gates the PR from phase 0 on. Tags at group boundaries.
 - **ESLint moved from phase 2 into phase 0**, because CI cannot run a lint step that does not exist. Phase 2 keeps TypeScript 7, the bundle analyzer and the Tailwind question.
 - **ESLint stays on 9, not 10 — blocked upstream, not a per-phase recheck.** Three of `eslint-config-next`'s dependencies cap at `eslint ^9` and all are at their latest release: `eslint-plugin-import@2.32.0`, `eslint-plugin-jsx-a11y@6.10.2`, `eslint-plugin-react@7.37.5`. `npm install` reports whichever it hits first, which is why phase 1 recorded only one. Verified in phase 2 as real breakage, not stale metadata: forcing `eslint@10.9.1` in makes `eslint-plugin-react` throw `contextOrFilename.getFilename is not a function` from its React version auto-detection; pinning `settings.react.version` gets past that and then `eslint-plugin-tailwindcss` throws `context.getSourceCode is not a function`. It is a queue of removed APIs, not one package. `eslint@9.39.5` is already the newest 9.x — the npm deprecation warning only means 9.x moved to the `maintenance` dist-tag. The recheck is one command: `npm view eslint-plugin-react peerDependencies.eslint`.
+- **The app has no proxy, decided in phase 3.** `src/middleware.ts` was renamed to `src/proxy.ts` by the codemod and then deleted, because its only job — seeding empty `cart` and `orders` cookies — was a default that belongs in `src/actions/session.ts`. If a future phase wants a proxy back, the bar is something that genuinely has to run in front of the app.
+
 - **No `overrides` block.** `next upgrade` adds one pinning the React types across the tree. Dropped in phase 1 and the install resolved cleanly without it.
 - **Skipped the `cache-components-instant-false` codemod** offered for 16.3. It adds `export const instant = false` to every page and layout as an adoption escape hatch, which phase 6 would only have to delete.
 - **Tailwind 3.4 stays**, decided in phase 2. A CSS engine migration with real regression risk across every component, no Playwright suite until phase 7 to catch what it breaks, and it teaches nothing about Next.js. Consequence: `eslint-plugin-tailwindcss` stays pinned at 3.18.3, because 4.x requires `tailwindcss ^4`.
@@ -75,5 +90,5 @@ Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 t
 - Christophe manages Node with `mise`, not `fnm`. His default shell runs Node 24.17.0 while `.nvmrc` pins 24.20.0, so `.nvmrc` is not currently driving his local version and CI is the only place it binds. Installs live under `/Users/tophe/.local/share/mise/installs/node/`, which is how to invoke a specific version when a measurement depends on it. Keep this out of the workshop docs, it is personal tooling.
 - Node 24.20.0 is the current LTS. `.nvmrc` moved to it in phase 0. Phase 0's numbers were taken on 24.17.0, so phase 1 re-measured its own before state rather than carrying them over.
 - His global `.npmrc` sets `min-release-age=2`, which holds back anything published in the last two days. That is why `@types/react-dom` is at 19.2.5 rather than 19.2.7. Personal tooling, keep it out of the workshop docs.
-- Deployment is wired through the Vercel dashboard on `master`. There is no `vercel.json`. The `.github/workflows/ci.yml` added in phase 0 is the only workflow.
+- Deployment is wired through the Vercel dashboard on `master`. Phase 2 added a `vercel.json` whose `buildCommand` is the production type-check gate. The `.github/workflows/ci.yml` added in phase 0 is the only workflow.
 - Measure build performance with **user CPU time, not wall clock**. On a 12-core laptop wall clock is bounded by the longest chain and badly understates a change; phase 1's cache saved 86% of the CPU but only 1.3s of wall clock.
