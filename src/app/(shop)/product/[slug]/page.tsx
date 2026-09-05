@@ -1,3 +1,4 @@
+import { cacheLife, cacheTag } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -6,10 +7,14 @@ import { AddToCartButton } from "@/components/AddToCartButton";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { PageContainer } from "@/components/Layout";
 import { ProductCardLoading } from "@/components/ProductCardLoading";
-import { getProduct } from "@/lib/api";
+import { getProduct } from "@/lib/catalog";
 import { extractProductIdFromSlug } from "@/utils/slugUtils";
 
-// Async child component
+/**
+ * Reads `params`, which is request-time data. This is the cache boundary:
+ * nothing above it can be cached, and everything below it is a pure function
+ * of the product id.
+ */
 async function ProductContent({
   params,
 }: {
@@ -23,6 +28,24 @@ async function ProductContent({
     // Handle invalid slug
     return <div>Invalid product URL</div>;
   }
+
+  return <ProductDetail id={id} />;
+}
+
+/**
+ * Caches the rendered output on top of the already-cached `getProduct`. The
+ * two entries nest: this one holds the markup for a product, `getProduct`'s
+ * holds the JSON that `/checkout` also reads. Both carry `product:${id}` so a
+ * single invalidation reaches both.
+ *
+ * `AddToCartButton` is a Client Component passed straight through — a cached
+ * scope stores the reference to it, not its behaviour, so the button stays
+ * interactive.
+ */
+async function ProductDetail({ id }: { id: number }) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("products", `product:${id}`);
 
   const product = await getProduct(id);
 
