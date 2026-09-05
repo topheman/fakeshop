@@ -65,6 +65,16 @@ export async function setCart(cart: Cart): Promise<void> {
 }
 
 /**
+ * A visitor has no cart cookie until their first add to cart, and absent
+ * means empty. Returns a fresh object every call because `prepareCart`
+ * mutates the cart it is given — a shared constant would accumulate the
+ * items of every visitor for as long as the server process lives.
+ */
+function emptyCart(): Cart {
+  return { items: [] };
+}
+
+/**
  * Add an item to the cart
  * @param id - The ID of the product to add
  * @param quantity - The quantity of the product to add
@@ -76,13 +86,11 @@ export async function updateCart({
 }: {
   id: number;
   quantity: number | null | undefined;
-}): Promise<Cart | null> {
-  const cart = await getCart();
-  if (cart) {
-    const updatedCart = prepareCart({ cart, id, quantity });
-    await setCart(updatedCart);
-  }
-  return cart;
+}): Promise<Cart> {
+  const cart = (await getCart()) ?? emptyCart();
+  const updatedCart = prepareCart({ cart, id, quantity });
+  await setCart(updatedCart);
+  return updatedCart;
 }
 
 export async function clearCart(): Promise<void> {
@@ -108,6 +116,10 @@ export async function setOrders(orders: Order[]): Promise<void> {
   cookieStore.set({
     name: "orders",
     value: JSON.stringify(orders),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: COOKIE_MAX_AGE,
   });
 }
 
