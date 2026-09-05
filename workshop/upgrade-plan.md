@@ -73,6 +73,8 @@ Concepts: what `cacheComponents` means now that `dynamicIO` is gone, and how the
 
 ### Phase 2: Toolchain
 
+> Superseded by [`phase-2.md`](./phase-2.md). Two items below turned out not to be work at all: the ESLint flat config moved to phase 0, and `useTypeScriptCli` is already the default in 16.3.4. Kept as written, as a record of what was expected.
+
 ESLint flat config, since `next lint` no longer exists. TypeScript 7 for `next build` type checking via `useTypeScriptCli`. A look through the new Turbopack bundle analyzer at `next experimental-analyze`, which will have opinions about `@faker-js/faker` and `lucide-react`. `next dev --inspect` when we need it.
 
 Open question for this phase: Tailwind 3.4 to 4 is a separate migration with its own risk. My instinct is to leave it, because it teaches nothing about Next.js. Decide when we get there.

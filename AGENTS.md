@@ -32,7 +32,7 @@ When a phase is done, write `workshop/phase-N.md` covering the concepts, what ch
 
 - Next.js App Router, 16.3.4, pinned exactly
 - React 19.2.8
-- TypeScript 5.7, Tailwind CSS 3.4, `shadcn/ui` components under `src/components/ui`
+- TypeScript 6 for the editor and ESLint, TypeScript 7 for `npm run typecheck` (see [`workshop/phase-2.md`](workshop/phase-2.md)), Tailwind CSS 3.4, `shadcn/ui` components under `src/components/ui`
 - TanStack Query for the client-side search box
 - Vitest with React Testing Library
 - ESLint 9 with a flat `eslint.config.mjs`, Prettier as a plugin

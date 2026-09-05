@@ -26,7 +26,7 @@ Each phase document covers:
 
 - [x] [Phase 0: Make the repo tell the truth](./phase-0.md)
 - [x] [Phase 1: Reach 16.3 and React 19.2](./phase-1.md)
-- [ ] Phase 2: Toolchain
+- [x] [Phase 2: Toolchain](./phase-2.md)
 - [ ] Phase 3: Middleware becomes proxy
 
 ### The caching model
