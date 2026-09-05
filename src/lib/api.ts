@@ -1,3 +1,16 @@
+/**
+ * The transport layer. This module is isomorphic: Server Components reach it
+ * through `./catalog`, and the browser calls it directly through
+ * `src/hooks/products.ts` and TanStack Query.
+ *
+ * There is no `cache` option on the fetch below. Server-side caching is
+ * `./catalog`'s job now. Leaving `cache: "force-cache"` here would put the
+ * fetch Data Cache *underneath* every `use cache` scope: a second, untagged
+ * layer that `revalidateTag` cannot reach. Measured in phase 4 — after
+ * invalidating the tag, a `force-cache` fetch inside the re-run scope returned
+ * the same stale value, while the same fetch without the option returned fresh
+ * data. Tag invalidation is silently defeated by the nested layer.
+ */
 const BASE_URL = "https://dummyjson.com";
 
 export interface Product {
@@ -31,17 +44,7 @@ async function fetchApi<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
-    /**
-     * The data is static, so we can cache it indefinitely.
-     * In a real project, you would use some redis cache and
-     * a revalidation strategy like stale-while-revalidate.
-     *
-     * This is a nextjs specific option. - https://nextjs.org/docs/app/api-reference/functions/fetch
-     */
-    cache: "force-cache",
-    ...options,
-  });
+  const res = await fetch(`${BASE_URL}${endpoint}`, options);
   if (!res.ok) {
     throw new Error(`API request failed: ${res.statusText}`);
   }
