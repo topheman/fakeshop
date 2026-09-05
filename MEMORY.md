@@ -4,9 +4,9 @@
 
 ## Current phase
 
-**Phase 2: Toolchain** — not started.
+**Phase 3: Middleware becomes proxy** — not started. Rename `src/middleware.ts` to `src/proxy.ts` and revisit what belongs there; the cookie seeding is the question, not the rename. Every build still prints the deprecation warning.
 
-Phase 1 is done on branch `workshop/phase-1`, not yet merged. Phase 2 covers ESLint 10 (blocked today, see below), TypeScript 7 for `next build` type checking via `useTypeScriptCli`, the Turbopack bundle analyzer at `next experimental-analyze`, and the open Tailwind 4 question.
+Phase 2 is done on branch `workshop/phase-2`. Phases 0, 1 and 2 are written up in `workshop/`.
 
 ## Baseline as of 2026-09-02
 
@@ -32,6 +32,18 @@ Branch `workshop/phase-0`, merged in PR #4. Route table came out byte-identical,
 - `lucide-react` 0.344.0 to 1.38.0. v1 dropped brand icons, so `Github` became a local `src/components/GithubIcon.tsx`.
 - `.nvmrc` to 24.20.0, `lint-staged.config.js` duplicate glob fixed, `tailwind.config.js` converted to ESM, `--force` dropped from the README.
 
+### Phase 2: Toolchain
+
+Branch `workshop/phase-2`. TypeScript 5.7.3 to 6.0.3 plus `typescript-native` (`npm:typescript@7.0.2`) side by side, the build's type check moved out to `vercel.json`, and the first run of the Turbopack bundle analyzer. No application code changed, route table byte-identical. Full write-up in [`workshop/phase-2.md`](workshop/phase-2.md).
+
+- **`useTypeScriptCli` was never work.** Already the default in 16.3.4 (`node_modules/next/dist/server/config-shared.js:257`); the flag only turns the CLI checker off. The plan had budgeted a phase item for it.
+- **TypeScript 7 is 4x faster and ESLint is what stops it being the only compiler.** Cold full-project typecheck on Node 24.20.0: 5.7.3 ~1.25s real / ~2.49s user, 6.0.3 1.30s / 2.58s, 7.0.2 0.30s / 0.78s. TS 6 is not faster than 5.7 and was never going to be — 6.0 is the last JavaScript implementation.
+- **Cold `next build`** with TS 6 held constant: 5.27–5.40s real / ~16.6s user with the type check, 3.97–4.03s / ~14.1s without. The `Running TypeScript ... 1518ms` line is replaced by `Skipping validation of types` plus a 4ms `tsc --showConfig` call, which is why the build still needs a resolvable `typescript`.
+- `tsconfig.json` lost `"target": "es5"` for `"ES2017"` — TS 6 warns `TS5107`, TS 7 errors `TS5108`. ES2017 is Next's own suggested value.
+- `lint-staged.config.js` called bare `tsc`; now calls `npm run typecheck`, so the compiler path is written down once.
+- **The bundle analyzer's findings**: the app is 2% of its own client bundle (11.1 KB gz of 524.9 KB); fonts are 40.7% but are seven `unicode-range` subsets of which a browser downloads one; `polyfill-nomodule.js` is 38.5 KB nobody fetches; `@faker-js/faker` is 962.8 KB gz of _server_ bundle on `/account` and `/login`, correctly absent from every client chunk, for six lines in `src/actions/sessionUtils.ts`; `/api/og` is 20.6 MB gz of server bundle, a second reason for phase 9 to look at it. `lucide-react` tree-shakes perfectly — three icons, 1.7 KB gz — so phase 0's v1 upgrade needs no follow-up.
+- `npm run analyze` added. Use `-o` to write to `.next/diagnostics/analyze` instead of serving a UI.
+
 ### Phase 1: Reach 16.3 and React 19.2
 
 Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 to 19.2.8, `eslint-config-next` to 16.3.4. No application code changed. Full write-up in [`workshop/phase-1.md`](workshop/phase-1.md).
@@ -51,14 +63,16 @@ Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 t
 - **Output**: phase docs in `workshop/`. No article rewrite for now.
 - **PR strategy**: one phase, one branch, one PR, straight to `master`. Not stacked. Merging to `master` deploys production, so every phase must leave the app deployable, and CI gates the PR from phase 0 on. Tags at group boundaries.
 - **ESLint moved from phase 2 into phase 0**, because CI cannot run a lint step that does not exist. Phase 2 keeps TypeScript 7, the bundle analyzer and the Tailwind question.
-- **ESLint stays on 9, not 10.** Reconfirmed in phase 1 against `eslint-config-next@16.3.4`: it still depends on `eslint-plugin-import@^2.32.0`, whose peer range stops at `eslint ^9`, and 2.32.0 is still the latest release. `next upgrade` sets `eslint` to 10 and the install fails with `ERESOLVE`. Recheck at phase 2.
+- **ESLint stays on 9, not 10 — blocked upstream, not a per-phase recheck.** Three of `eslint-config-next`'s dependencies cap at `eslint ^9` and all are at their latest release: `eslint-plugin-import@2.32.0`, `eslint-plugin-jsx-a11y@6.10.2`, `eslint-plugin-react@7.37.5`. `npm install` reports whichever it hits first, which is why phase 1 recorded only one. Verified in phase 2 as real breakage, not stale metadata: forcing `eslint@10.9.1` in makes `eslint-plugin-react` throw `contextOrFilename.getFilename is not a function` from its React version auto-detection; pinning `settings.react.version` gets past that and then `eslint-plugin-tailwindcss` throws `context.getSourceCode is not a function`. It is a queue of removed APIs, not one package. `eslint@9.39.5` is already the newest 9.x — the npm deprecation warning only means 9.x moved to the `maintenance` dist-tag. The recheck is one command: `npm view eslint-plugin-react peerDependencies.eslint`.
 - **No `overrides` block.** `next upgrade` adds one pinning the React types across the tree. Dropped in phase 1 and the install resolved cleanly without it.
 - **Skipped the `cache-components-instant-false` codemod** offered for 16.3. It adds `export const instant = false` to every page and layout as an adoption escape hatch, which phase 6 would only have to delete.
-- **Open**: whether Tailwind 3 to 4 belongs in phase 2. Leaning no, it teaches nothing about Next.js.
+- **Tailwind 3.4 stays**, decided in phase 2. A CSS engine migration with real regression risk across every component, no Playwright suite until phase 7 to catch what it breaks, and it teaches nothing about Next.js. Consequence: `eslint-plugin-tailwindcss` stays pinned at 3.18.3, because 4.x requires `tailwindcss ^4`.
+- **Type checking runs once, in `npm run typecheck`, on TypeScript 7.** `next build` has `typescript.ignoreBuildErrors: true`, which is only safe because `vercel.json` sets `buildCommand` to `npm run typecheck && npm run build`. Do not remove that file without putting the gate somewhere else — merging to `master` is the production deploy.
+- **TypeScript 6 keeps the `typescript` name; 7 is `typescript-native` and is invoked by explicit path.** TypeScript 7 ships no API, so anything that imports the compiler (`typescript-eslint`, the editor) needs 6. `typescript-estree` declares `>=4.8.4 <6.1.0`, so 6.0.3 is supported and 6.1 will need watching. npm gives `.bin/tsc` to the root `typescript` and creates no bin entry for the alias, silently — never call bare `tsc` in a script.
 
 ## Environment notes
 
-- Christophe manages Node with `fnm`, so `.nvmrc` is what actually drives his local version. Keep this out of the workshop docs, it is personal tooling.
+- Christophe manages Node with `mise`, not `fnm`. His default shell runs Node 24.17.0 while `.nvmrc` pins 24.20.0, so `.nvmrc` is not currently driving his local version and CI is the only place it binds. Installs live under `/Users/tophe/.local/share/mise/installs/node/`, which is how to invoke a specific version when a measurement depends on it. Keep this out of the workshop docs, it is personal tooling.
 - Node 24.20.0 is the current LTS. `.nvmrc` moved to it in phase 0. Phase 0's numbers were taken on 24.17.0, so phase 1 re-measured its own before state rather than carrying them over.
 - His global `.npmrc` sets `min-release-age=2`, which holds back anything published in the last two days. That is why `@types/react-dom` is at 19.2.5 rather than 19.2.7. Personal tooling, keep it out of the workshop docs.
 - Deployment is wired through the Vercel dashboard on `master`. There is no `vercel.json`. The `.github/workflows/ci.yml` added in phase 0 is the only workflow.

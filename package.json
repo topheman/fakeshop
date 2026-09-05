@@ -14,11 +14,12 @@
     "dev": "next dev",
     "scan": "NEXT_PUBLIC_ENABLE_SCAN=true npm run dev",
     "build": "next build",
+    "analyze": "next experimental-analyze",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "node node_modules/typescript-native/bin/tsc -p tsconfig.json --noEmit",
     "prepare": "husky && husky install",
     "test:ci": "vitest run"
   },
@@ -62,7 +63,8 @@
     "postcss": "8.4.35",
     "prettier": "3.4.2",
     "tailwindcss": "3.4.1",
-    "typescript": "5.7.3",
+    "typescript": "^6.0.3",
+    "typescript-native": "npm:typescript@^7.0.2",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.6"
   }
