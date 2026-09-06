@@ -31,7 +31,7 @@ Each phase document covers:
 
 ### The caching model
 
-- [ ] Phase 4: Cache Components properly
+- [x] [Phase 4: Cache Components properly](./phase-4.md)
 - [ ] Phase 5: Error boundaries that can retry
 
 ### Instant navigations

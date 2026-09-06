@@ -1,10 +1,18 @@
+import { cacheLife, cacheTag } from "next/cache";
 import Link from "next/link";
 
-import { getCategories } from "@/lib/api";
+import { getCategories } from "@/lib/catalog";
 
 import { CategoryIcon } from "./CategoryIcon";
 
+/**
+ * Takes no props, so it has exactly one cache entry — the whole nav renders
+ * once and every route that mounts it reuses the same markup.
+ */
 export async function CategoryList() {
+  "use cache";
+  cacheLife("max");
+  cacheTag("categories");
   console.log("  CategoryList");
   const categories = await getCategories();
 

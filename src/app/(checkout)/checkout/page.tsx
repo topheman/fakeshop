@@ -6,7 +6,7 @@ import { Fragment, Suspense } from "react";
 import { getUserInfos, getCart, order } from "@/actions/session";
 import { PageContainer } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { getProduct } from "@/lib/api";
+import { getProduct } from "@/lib/catalog";
 import { PAYMENT_METHODS } from "@/utils/payment";
 import { generateProductSlug } from "@/utils/slugUtils";
 

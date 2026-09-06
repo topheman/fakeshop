@@ -1,6 +1,7 @@
 // inspired by https://github.com/topheman/me/blob/master/src/components/CustomQRCode.tsx
 
 import { QrCode } from "lucide-react";
+import { cacheLife } from "next/cache";
 
 import { generateQRCode } from "@/utils/qrcode";
 
@@ -15,7 +16,13 @@ export async function CustomQRCode({ payload }: CustomQRCodeProps) {
    * AND not wrapped in a <Suspense> component.
    * That way, the component is rendered ONCE at build time, its html
    * included directly in the parent (no loading state).
+   *
+   * Without the `cacheLife` below this scope took the `default` profile, and
+   * because a route's revalidate is the shortest lifetime among the content it
+   * prerenders, a QR code of a hardcoded URL was pinning the whole homepage to
+   * a 15 minute revalidate. Set `cacheLife` in every `use cache` scope.
    */
+  cacheLife("max");
   console.log("  CustomQRCode");
   const qrCodeDataUrl = await generateQRCode(payload);
 

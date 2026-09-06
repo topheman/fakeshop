@@ -4,9 +4,9 @@
 
 ## Current phase
 
-**Phase 4: Cache Components properly** — not started. The heart of the workshop. Move `src/lib/api.ts` from `fetch(cache: "force-cache")` to `use cache` scopes with `cacheLife` profiles and `cacheTag` keys, then wire the cart and order mutations in `src/actions/` to invalidate the right tags.
+**Phase 5: Error boundaries that can retry** — not started. Add `error.tsx`, then replace the try/catch in `CategoryProducts` with a `catchError` boundary from `next/error`, whose `retry()` re-runs the Server Component where the old `reset()` could not. Note that phase 4 left three catch blocks with a deliberate `cacheLife("seconds")` on the failure branch; phase 5 should decide whether the boundary replaces that or sits alongside it.
 
-Phase 3 is done on branch `workshop/phase-3`. Phases 0, 1, 2 and 3 are written up in `workshop/`.
+Phase 4 is done on branch `workshop/phase-4`. Phases 0 through 4 are written up in `workshop/`.
 
 ## Baseline as of 2026-09-02
 
@@ -21,6 +21,19 @@ Measured on `master` at tag **`v1.0.1`** (`fa08514`), clean tree. That tag is th
 - Installed: `next` 16.1.6, `react` 19.0.4. Latest: 16.3.4 and 19.2.8.
 
 ## Completed phases
+
+### Phase 4: Cache Components properly
+
+Branch `workshop/phase-4`. New `src/lib/catalog.ts` cached read layer over a now-uncached `src/lib/api.ts`, `use cache` moved up from the data reads to the components, and an explicit `cacheLife` on every scope. Route table unchanged in shape; `/` went from 15m to 30d. Full write-up in [`workshop/phase-4.md`](workshop/phase-4.md).
+
+- **The module split was forced by the compiler, not chosen.** `src/lib/api.ts` is isomorphic — TanStack Query calls it from the browser through `src/hooks/products.ts` — so it reaches the client bundle and cannot import `next/cache`. The build error names the Pages Router, which this app does not have; the import trace under it is the real message. The `next/cache` import is its own guard, so no `server-only` package is needed.
+- **The measurement that is the point of the phase**: on a second request to a warm page, the baseline re-ran every data function and re-rendered; now `/category/[slug]` and `/product/[slug]` log only the uncached component that awaits `params`, and `/search?q=phone` logs nothing at all.
+- **`force-cache` nested under `use cache` silently defeats `revalidateTag`.** Measured with three throwaway probe routes: after invalidating the tag, the `use cache` entry is dropped and the function re-runs, but the `force-cache` fetch inside it returns the same stale value, with no error. Same probe without the option returned fresh data. This is why `src/lib/api.ts` has no `cache` option now.
+- **A default parameter value inside a `use cache` scope creates a second entry.** Keys are built from the arguments as passed, before defaults apply, so `f("x")` and `f("x", 10, 0)` ran the body twice. Hence the shape of `catalog.ts`: an uncached exported wrapper holds the defaults and delegates to a private cached function with required parameters.
+- **One un-lifetimed `use cache` was pinning `/` to a 15 minute revalidate.** `CustomQRCode` had carried `"use cache"` with no `cacheLife` since the original article, taking the `default` profile; a route's revalidate is the shortest lifetime among the content it prerenders. One line took `/` to 30d.
+- **Error branches get their own `cacheLife("seconds")`** so a failure is never cached at the success lifetime and never reaches a prerender. `SearchResults` needed a real fix rather than a lifetime: its catch fell through to "No products found", so a network blip rendered as a confident empty result set.
+- **Component entries carry the same tags as the data functions under them.** An outer scope with an explicit `cacheLife` never re-reads an inner one until its own entry goes, so tagging only the data would leave the component serving markup built from invalidated JSON.
+- Incidental: `getProducts` has no server-side caller and is browser-only. A directory named `_foo` under `app/` is a private folder and 404s. `export const dynamic` is rejected outright under Cache Components.
 
 ### Phase 0: Make the repo tell the truth
 
@@ -77,6 +90,7 @@ Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 t
 - **PR strategy**: one phase, one branch, one PR, straight to `master`. Not stacked. Merging to `master` deploys production, so every phase must leave the app deployable, and CI gates the PR from phase 0 on. Tags at group boundaries.
 - **ESLint moved from phase 2 into phase 0**, because CI cannot run a lint step that does not exist. Phase 2 keeps TypeScript 7, the bundle analyzer and the Tailwind question.
 - **ESLint stays on 9, not 10 — blocked upstream, not a per-phase recheck.** Three of `eslint-config-next`'s dependencies cap at `eslint ^9` and all are at their latest release: `eslint-plugin-import@2.32.0`, `eslint-plugin-jsx-a11y@6.10.2`, `eslint-plugin-react@7.37.5`. `npm install` reports whichever it hits first, which is why phase 1 recorded only one. Verified in phase 2 as real breakage, not stale metadata: forcing `eslint@10.9.1` in makes `eslint-plugin-react` throw `contextOrFilename.getFilename is not a function` from its React version auto-detection; pinning `settings.react.version` gets past that and then `eslint-plugin-tailwindcss` throws `context.getSourceCode is not a function`. It is a queue of removed APIs, not one package. `eslint@9.39.5` is already the newest 9.x — the npm deprecation warning only means 9.x moved to the `maintenance` dist-tag. The recheck is one command: `npm view eslint-plugin-react peerDependencies.eslint`.
+- **No revalidation webhook, decided in phase 4.** The plan said to wire cart and order mutations to invalidate tags, but cart, orders and user info live entirely in cookies, so there is no server-side cache for `updateTag` to invalidate — a call there would mislead the next reader about what is cached. The only cached data is the dummyjson catalog, which no mutation touches. The tags (`categories`, `products`, `product:${id}`, `category:${slug}`) are declared with no caller on purpose, so the surface exists the day there is a real backend. A guarded `POST /api/revalidate` was considered and rejected: it would be a public endpoint plus a deployment secret to demonstrate an invalidation that returns byte-identical data, and the instructive half of it was obtained from a throwaway probe instead.
 - **The app has no proxy, decided in phase 3.** `src/middleware.ts` was renamed to `src/proxy.ts` by the codemod and then deleted, because its only job — seeding empty `cart` and `orders` cookies — was a default that belongs in `src/actions/session.ts`. If a future phase wants a proxy back, the bar is something that genuinely has to run in front of the app.
 
 - **No `overrides` block.** `next upgrade` adds one pinning the React types across the tree. Dropped in phase 1 and the install resolved cleanly without it.
