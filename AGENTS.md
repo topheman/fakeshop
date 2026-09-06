@@ -44,7 +44,7 @@ When a phase is done, write `workshop/phase-N.md` covering the concepts, what ch
 - `npm run lint`, `npm run lint:fix`, `npm run test`, `npm run typecheck`, `npm run build`.
 - Write tests for logic you add. The existing suite is thin, which is fine.
 - Format on save is on, pre-commit hooks run lint, format, tests and typecheck on staged files.
-- DO NOT start a dev server on your own. I will run it at http://localhost:3000.
+- DO NOT start a dev server on your own. I will run `next dev` at http://localhost:3000. This covers the dev server only: when a task needs performance measurements from a running app, build and start the **production** server (`npm run build`, `npm start`) on your own. Some things only show up in a running server's log — what happens on a second request to an already-warm page, for instance — and `next build` output cannot show them.
 - `npm install` resolves without `--force`. If it stops doing so, that is a regression worth investigating rather than working around.
 
 <!-- BEGIN:nextjs-agent-rules -->
