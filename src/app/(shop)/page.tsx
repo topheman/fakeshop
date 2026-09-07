@@ -2,6 +2,7 @@ import { User } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { CatalogErrorBoundary } from "@/components/CatalogErrorBoundary";
 import { CategoryList } from "@/components/CategoryList";
 import { CustomQRCode } from "@/components/CustomQRCode";
 import { GithubIcon } from "@/components/GithubIcon";
@@ -37,9 +38,18 @@ export default function Home() {
         </a>{" "}
         for more details about the project.
       </p>
-      <Suspense fallback={<div>Loading...</div>}>
-        <CategoryList />
-      </Suspense>
+      {/*
+        The least likely of the three boundaries to ever fire. `/` prerenders
+        this list at build time, so a catalog outage during the build fails the
+        build instead — measured in phase 5, an error boundary never rescues a
+        prerender. It only matters once the 30d entry expires and the
+        background regeneration is the thing that fails.
+      */}
+      <CatalogErrorBoundary label="Categories could not be loaded.">
+        <Suspense fallback={<div>Loading...</div>}>
+          <CategoryList />
+        </Suspense>
+      </CatalogErrorBoundary>
       <div className="mt-10 flex justify-center gap-4">
         <Link
           href="https://github.com/topheman/fakeshop"

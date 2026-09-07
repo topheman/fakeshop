@@ -1,8 +1,8 @@
 import { cacheLife, cacheTag } from "next/cache";
 
 import { searchProducts } from "@/lib/catalog";
-import type { Product } from "@/types";
 
+import { CatalogErrorBoundary } from "./CatalogErrorBoundary";
 import { ProductGrid } from "./ProductGrid";
 
 /**
@@ -14,7 +14,9 @@ export async function SearchResults({ query }: { query: string }) {
   return (
     <div>
       {query ? (
-        <SearchResultsFor query={query} />
+        <CatalogErrorBoundary label="Search is unavailable right now.">
+          <SearchResultsFor query={query} />
+        </CatalogErrorBoundary>
       ) : (
         <p>Use the search box above to find products.</p>
       )}
@@ -22,26 +24,23 @@ export async function SearchResults({ query }: { query: string }) {
   );
 }
 
+/**
+ * The try/catch here used to fall through to "No products found", so a network
+ * failure rendered as an empty result set — a wrong answer cached like a right
+ * one. Phase 4 fixed the message and gave the failure branch a short
+ * `cacheLife`; phase 5 removes the branch entirely and lets the boundary above
+ * handle it, because a rejected `use cache` scope is never written to the
+ * cache in the first place.
+ */
 async function SearchResultsFor({ query }: { query: string }) {
   "use cache";
+  cacheLife("hours");
   cacheTag("products");
 
-  let results: Product[] = [];
-  try {
-    const searchResults = await searchProducts(query);
-    results = searchResults.products;
-  } catch (error) {
-    console.error("Error fetching search results:", error);
-    // This branch used to fall through to "No products found", so a network
-    // failure rendered as an empty result set. Harmless when nothing was
-    // cached; caching it for an hour would turn a blip into a lie.
-    cacheLife("seconds");
-    return <p>Search is unavailable right now. Please try again.</p>;
-  }
-  cacheLife("hours");
+  const { products } = await searchProducts(query);
 
-  return results.length > 0 ? (
-    <ProductGrid products={results} />
+  return products.length > 0 ? (
+    <ProductGrid products={products} />
   ) : (
     <p>No products found for "{query}"</p>
   );
