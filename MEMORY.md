@@ -4,9 +4,9 @@
 
 ## Current phase
 
-**Phase 5: Error boundaries that can retry** — not started. Add `error.tsx`, then replace the try/catch in `CategoryProducts` with a `catchError` boundary from `next/error`, whose `retry()` re-runs the Server Component where the old `reset()` could not. Note that phase 4 left three catch blocks with a deliberate `cacheLife("seconds")` on the failure branch; phase 5 should decide whether the boundary replaces that or sits alongside it.
+**Phase 6: Partial prefetching and instant navigations** — not started. Turn on `partialPrefetching`, open Instant Insights in the DevTools and work through what it flags. Product and category pages already stream inside Suspense, so this is mostly about whether the loading shells are the right shape and where `cookies()` reads de-opt a route. Phase 5 moved the category heading out of the cached component and into the uncached `CategoryContent`, which is now part of what the loading shell has to cover.
 
-Phase 4 is done on branch `workshop/phase-4`. Phases 0 through 4 are written up in `workshop/`.
+Phase 5 is done on branch `workshop/phase-5`. Phases 0 through 5 are written up in `workshop/`.
 
 ## Baseline as of 2026-09-02
 
@@ -21,6 +21,17 @@ Measured on `master` at tag **`v1.0.1`** (`fa08514`), clean tree. That tag is th
 - Installed: `next` 16.1.6, `react` 19.0.4. Latest: 16.3.4 and 19.2.8.
 
 ## Completed phases
+
+### Phase 5: Error boundaries that can retry
+
+Branch `workshop/phase-5`. Two `error.tsx` files, one per route group; a reusable `catchError` boundary in `src/components/CatalogErrorBoundary.tsx` used at the category grid, the search results and the homepage category list; and the `try/catch` plus its `cacheLife("seconds")` branch removed from both read sites. Route table byte-identical. Full write-up in [`workshop/phase-5.md`](workshop/phase-5.md).
+
+- **The phase-4 open question is answered: a `use cache` scope that rejects writes no entry at all.** Measured with a fault injected into `src/lib/catalog.ts` — two consecutive failing requests both re-ran the read, then a success was cached normally. The `cacheLife("seconds")` failure branch existed only because a `catch` that returns JSX turns a failure into a cacheable *value*; let it throw and there is nothing to cache. There were two such branches, not the three this file previously recorded.
+- **`retry()` versus `reset()`, measured in the browser**: `reset()` made zero network requests and re-rendered the same errored payload even with the fault already cleared; `retry()` issued one `?_rsc=` request, the server log showed the Server Component running again, and the grid swapped in without a navigation.
+- **An error boundary never rescues a prerender.** Building with `getCategories` faulted fails the build (`Export encountered an error on /(shop)/page: /`) rather than baking the fallback into the 30d shell of `/`, and wrapping `CategoryList` in the `catchError` boundary does not change that. Both boundaries are request-time UI only.
+- **The fallback is client-rendered and needs JavaScript.** The response ends with React's errored-row marker carrying only a digest — `2f:E{"digest":"2660648470"}` — and no fallback markup. `/category/[slug]` is a partial prerender, so the shell has already flushed and no server pass is left to render the fallback. Watch out when grepping a response for the fallback text: the `label` prop is serialized into the flight data on healthy pages too, so grep `role="alert"` instead.
+- **`notFound()` and `redirect()` pass through `catchError` untouched**, verified from inside a `use cache` scope. A hand-rolled `componentDidCatch` in the same position swallows `notFound()` and renders its fallback — verified with a control test.
+- **`ErrorInfo["error"]` is typed `unknown`, not `Error`.** The documented `catchError` example reads `error.message` off it and does not compile. Only `error.tsx` gets `Error & { digest?: string }`.
 
 ### Phase 4: Cache Components properly
 
@@ -91,6 +102,8 @@ Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 t
 - **ESLint moved from phase 2 into phase 0**, because CI cannot run a lint step that does not exist. Phase 2 keeps TypeScript 7, the bundle analyzer and the Tailwind question.
 - **ESLint stays on 9, not 10 — blocked upstream, not a per-phase recheck.** Three of `eslint-config-next`'s dependencies cap at `eslint ^9` and all are at their latest release: `eslint-plugin-import@2.32.0`, `eslint-plugin-jsx-a11y@6.10.2`, `eslint-plugin-react@7.37.5`. `npm install` reports whichever it hits first, which is why phase 1 recorded only one. Verified in phase 2 as real breakage, not stale metadata: forcing `eslint@10.9.1` in makes `eslint-plugin-react` throw `contextOrFilename.getFilename is not a function` from its React version auto-detection; pinning `settings.react.version` gets past that and then `eslint-plugin-tailwindcss` throws `context.getSourceCode is not a function`. It is a queue of removed APIs, not one package. `eslint@9.39.5` is already the newest 9.x — the npm deprecation warning only means 9.x moved to the `maintenance` dist-tag. The recheck is one command: `npm view eslint-plugin-react peerDependencies.eslint`.
 - **No revalidation webhook, decided in phase 4.** The plan said to wire cart and order mutations to invalidate tags, but cart, orders and user info live entirely in cookies, so there is no server-side cache for `updateTag` to invalidate — a call there would mislead the next reader about what is cached. The only cached data is the dummyjson catalog, which no mutation touches. The tags (`categories`, `products`, `product:${id}`, `category:${slug}`) are declared with no caller on purpose, so the surface exists the day there is a real backend. A guarded `POST /api/revalidate` was considered and rejected: it would be a public endpoint plus a deployment secret to demonstrate an invalidation that returns byte-identical data, and the instructive half of it was obtained from a throwaway probe instead.
+- **The error fallback needs JavaScript, accepted in phase 5.** With the boundaries in place a catalog outage shows a no-JS visitor the loading skeleton and nothing else, where phase 4's `try/catch` server-rendered a readable paragraph. Christophe chose to ship the boundaries anyway and document it: the alternatives are to keep caching an error as a value and give up `retry()`, or to hand-roll a server-rendered message plus a `router.refresh()` button, and both give back the thing the phase is for. The failure mode is a catalog outage seen by a no-JS visitor, which is a narrow intersection.
+- **`error.tsx` goes inside each route group, not at `src/app/`, decided in phase 5.** A boundary never wraps the `layout.tsx` beside it, so at `src/app/` it would sit above `(shop)/layout.tsx` and take the header, cart and footer down with the page. One directory lower the chrome survives. `(checkout)/error.tsx` is not decoration: `/checkout` calls `getProduct` per cart line with no handling anywhere in the path, so before phase 5 an outage there hit Next's built-in 500 page.
 - **The app has no proxy, decided in phase 3.** `src/middleware.ts` was renamed to `src/proxy.ts` by the codemod and then deleted, because its only job — seeding empty `cart` and `orders` cookies — was a default that belongs in `src/actions/session.ts`. If a future phase wants a proxy back, the bar is something that genuinely has to run in front of the app.
 
 - **No `overrides` block.** `next upgrade` adds one pinning the React types across the tree. Dropped in phase 1 and the install resolved cleanly without it.
