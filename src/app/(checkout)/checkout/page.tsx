@@ -4,13 +4,19 @@ import { redirect } from "next/navigation";
 import { Fragment, Suspense } from "react";
 
 import { getUserInfos, getCart, order } from "@/actions/session";
+import { CheckoutSkeleton } from "@/components/CheckoutSkeleton";
 import { PageContainer } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { getProduct } from "@/lib/catalog";
 import { PAYMENT_METHODS } from "@/utils/payment";
 import { generateProductSlug } from "@/utils/slugUtils";
 
-// Async child component
+/**
+ * Everything here is behind `cookies()`, so none of it can be in the App Shell
+ * that a `<Link>` prefetches. The `<h1>` used to be repeated in all three
+ * branches below; it says the same thing whatever the session does, so phase 6
+ * moved it up into the page where the shell can carry it.
+ */
 async function CheckoutContent() {
   const userInfos = await getUserInfos();
   const cart = await getCart();
@@ -33,7 +39,6 @@ async function CheckoutContent() {
   if (!userInfos) {
     return (
       <Fragment>
-        <h1 className="mb-8 text-3xl font-bold text-primary">Checkout</h1>
         <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
           <h2 className="mb-4 text-2xl font-semibold">
             Please Login to Continue
@@ -55,7 +60,6 @@ async function CheckoutContent() {
   if (!cart || cart.items.length === 0) {
     return (
       <Fragment>
-        <h1 className="mb-8 text-3xl font-bold text-primary">Checkout</h1>
         <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
           <h2 className="mb-4 text-2xl font-semibold">Your Cart is Empty</h2>
           <p className="mb-6 text-gray-600">
@@ -76,8 +80,6 @@ async function CheckoutContent() {
 
   return (
     <Fragment>
-      <h1 className="mb-8 text-3xl font-bold text-primary">Checkout</h1>
-
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Shipping Information */}
         <div className="space-y-6">
@@ -231,7 +233,8 @@ async function CheckoutContent() {
 export default function CheckoutPage() {
   return (
     <PageContainer>
-      <Suspense fallback={<div>Loading...</div>}>
+      <h1 className="mb-8 text-3xl font-bold text-primary">Checkout</h1>
+      <Suspense fallback={<CheckoutSkeleton />}>
         <CheckoutContent />
       </Suspense>
     </PageContainer>

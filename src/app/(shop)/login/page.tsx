@@ -12,7 +12,12 @@ export const metadata: Metadata = {
   description: "Login to your FakeShop account",
 };
 
-// Async child component
+/**
+ * Reads `searchParams`, so nothing from here can reach the shared App Shell:
+ * `?redirectTo=/checkout` and `?redirectTo=/account` are different URLs and
+ * the shell is one artifact for both. Only the form depends on it, so phase 6
+ * left the form here and moved the copy above it into the page.
+ */
 async function LoginContent({
   searchParams,
 }: {
@@ -34,25 +39,11 @@ async function LoginContent({
   }
 
   return (
-    <div className="w-full max-w-md space-y-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-primary">Welcome Back</h1>
-        <p className="mt-2 text-gray-600">
-          Sign in to your account to continue shopping
-        </p>
-
-        <p className="mt-2 text-gray-600">
-          This will create a <strong>fake user session</strong> for
-          demonstration purposes.
-        </p>
-      </div>
-
-      <form action={loginWithRedirect} className="mt-8 space-y-6">
-        <Button type="submit" className="w-full px-4 py-3">
-          Fake Login
-        </Button>
-      </form>
-    </div>
+    <form action={loginWithRedirect} className="mt-8 space-y-6">
+      <Button type="submit" className="w-full px-4 py-3">
+        Fake Login
+      </Button>
+    </form>
   );
 }
 
@@ -64,9 +55,26 @@ export default function LoginPage({
 }) {
   return (
     <PageContainer className="flex min-h-[calc(100vh-200px)] items-center justify-center">
-      <Suspense fallback={<div>Loading login...</div>}>
-        <LoginContent searchParams={searchParams} />
-      </Suspense>
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-primary">Welcome Back</h1>
+          <p className="mt-2 text-gray-600">
+            Sign in to your account to continue shopping
+          </p>
+
+          <p className="mt-2 text-gray-600">
+            This will create a <strong>fake user session</strong> for
+            demonstration purposes.
+          </p>
+        </div>
+        <Suspense
+          fallback={
+            <div className="mt-8 h-12 w-full animate-pulse rounded-md bg-primary/20" />
+          }
+        >
+          <LoginContent searchParams={searchParams} />
+        </Suspense>
+      </div>
     </PageContainer>
   );
 }
