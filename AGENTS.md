@@ -36,6 +36,7 @@ When a phase is done, write `workshop/phase-N.md` covering the concepts, what ch
 - TanStack Query for the client-side search box
 - Vitest with React Testing Library
 - ESLint 9 with a flat `eslint.config.mjs`, Prettier as a plugin
+- Errors from the catalog throw rather than being caught at the read site. `src/components/CatalogErrorBoundary.tsx` is a `catchError` boundary for subtrees, `src/app/(shop)/error.tsx` and `src/app/(checkout)/error.tsx` are the route-level ones (see [`workshop/phase-5.md`](workshop/phase-5.md)).
 - Data comes from the public `https://dummyjson.com` API. `src/lib/api.ts` is the isomorphic transport and does no caching; `src/lib/catalog.ts` is the server-only `use cache` layer that Server Components read through (see [`workshop/phase-4.md`](workshop/phase-4.md)). The browser calls `src/lib/api.ts` directly through TanStack Query.
 
 ## Guidelines
