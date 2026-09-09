@@ -42,8 +42,8 @@ export default function Home() {
       {/*
         The least likely of the three boundaries to ever fire. `/` prerenders
         this list at build time, so a catalog outage during the build fails the
-        build instead — measured in phase 5, an error boundary never rescues a
-        prerender. It only matters once the 30d entry expires and the
+        build instead, because an error boundary is request-time UI and never
+        rescues a prerender. It only matters once the 30d entry expires and the
         background regeneration is the thing that fails.
       */}
       <CatalogErrorBoundary label="Categories could not be loaded.">

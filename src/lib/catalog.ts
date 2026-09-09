@@ -19,8 +19,7 @@ import type { Product, SearchResult } from "./api";
  * in the exported wrapper in front of it. A cache key is built from the
  * arguments *as passed*, before parameter defaults are applied, so a default
  * inside a `use cache` scope means `f("x")` and `f("x", 10, 0)` are two
- * entries holding the same value. Measured, not assumed — see
- * `workshop/phase-4.md`.
+ * entries holding the same value. Measured, not assumed.
  */
 
 /**
@@ -47,7 +46,7 @@ export async function getCategories(): Promise<
  * The per-product tag lets one product be invalidated without dropping the
  * whole catalog. Nothing in this app calls `revalidateTag` yet — dummyjson is
  * read-only, so there is no mutation to hang it off. The tags are declared so
- * the surface exists for whenever a real backend does. See `workshop/phase-4.md`.
+ * the surface exists for whenever a real backend does.
  */
 export async function getProduct(id: number): Promise<Product> {
   "use cache";

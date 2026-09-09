@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 
 /**
  * Reads `searchParams`, so nothing from here can reach the shared App Shell:
- * `?redirectTo=/checkout` and `?redirectTo=/account` are different URLs and
- * the shell is one artifact for both. Only the form depends on it, so phase 6
- * left the form here and moved the copy above it into the page.
+ * `?redirectTo=/checkout` and `?redirectTo=/account` are different URLs and the
+ * shell is one artifact for both. Only the form depends on it, which is why the
+ * copy above it is rendered by the page and this boundary wraps the form alone.
  */
 async function LoginContent({
   searchParams,

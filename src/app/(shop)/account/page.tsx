@@ -20,9 +20,9 @@ export const metadata: Metadata = {
 
 /**
  * `getUserInfos`, `getOrders` and `getLanguage` all read request headers, so
- * this whole subtree is below the shell. The `<h1>` moved up into the page in
- * phase 6 for the same reason the category heading did in phase 5: it is UI
- * the visitor can be shown before any of this resolves.
+ * this whole subtree sits below the App Shell and streams in after the
+ * navigation. The `<h1>` is rendered by the page instead, since it is UI the
+ * visitor can be shown before any of this resolves.
  */
 async function AccountContent() {
   const userInfos = await getUserInfos();

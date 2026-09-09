@@ -30,8 +30,8 @@ describe("updateCart", () => {
   });
 
   test("adds an item when the visitor has no cart cookie yet", async () => {
-    // Until phase 3 the proxy seeded this cookie on every page response, and
-    // without it `updateCart` silently did nothing.
+    // Nothing seeds this cookie ahead of time, so `updateCart` has to cope
+    // with its absence rather than silently doing nothing.
     expect(await getCart()).toBeNull();
 
     const cart = await updateCart({ id: 42, quantity: undefined });

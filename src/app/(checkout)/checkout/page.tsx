@@ -13,9 +13,8 @@ import { generateProductSlug } from "@/utils/slugUtils";
 
 /**
  * Everything here is behind `cookies()`, so none of it can be in the App Shell
- * that a `<Link>` prefetches. The `<h1>` used to be repeated in all three
- * branches below; it says the same thing whatever the session does, so phase 6
- * moved it up into the page where the shell can carry it.
+ * that a `<Link>` prefetches. The `<h1>` is rendered by the page instead: it
+ * says the same thing down all three branches below, so the shell can carry it.
  */
 async function CheckoutContent() {
   const userInfos = await getUserInfos();

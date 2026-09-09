@@ -9,13 +9,10 @@ import { CategoryIcon } from "./CategoryIcon";
  * Takes no props, so it has exactly one cache entry — the whole nav renders
  * once and every route that mounts it reuses the same markup.
  *
- * The links used to carry `prefetch={false}` (added in Feb 2025, `d22a1e0`),
- * back when a prefetch pulled the destination's full cached render and 24
- * tiles in the viewport meant 24 of them. Under Cache Components a prefetch
- * only asks for the route's shell, and measured on the built app the whole
- * grid costs 5 requests and ~3.8 KB — the router never even gets to the other
- * 19 links. That is cheap enough that the opt-out costs more than it saves,
- * so phase 6 dropped it.
+ * The links prefetch, despite there being 24 of them. A prefetch only asks for
+ * the App Shell of `/category/[slug]`, which is one artifact shared by every
+ * tile whatever its slug, so the grid costs 5 requests and ~3.8 KB in total —
+ * the router never even reaches the other 19 links.
  */
 export async function CategoryList() {
   "use cache";
