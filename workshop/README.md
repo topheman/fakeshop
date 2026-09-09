@@ -17,6 +17,7 @@ Documentation for taking FakeShop from the Next 15 canary app it was written as 
 ## Phase documentation
 
 Each phase document covers:
+
 - **Concepts** — the Next.js feature and how it works
 - **Implementation** — what changed
 - **Key files** — the code worth rereading
@@ -36,7 +37,7 @@ Each phase document covers:
 
 ### Instant navigations
 
-- [ ] Phase 6: Partial prefetching and instant navigations
+- [x] [Phase 6: Partial prefetching and instant navigations](./phase-6.md)
 - [ ] Phase 7: Locking the behaviour down
 - [ ] Phase 8: Navigation polish
 

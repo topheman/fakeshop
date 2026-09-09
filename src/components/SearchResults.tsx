@@ -25,12 +25,11 @@ export async function SearchResults({ query }: { query: string }) {
 }
 
 /**
- * The try/catch here used to fall through to "No products found", so a network
- * failure rendered as an empty result set — a wrong answer cached like a right
- * one. Phase 4 fixed the message and gave the failure branch a short
- * `cacheLife`; phase 5 removes the branch entirely and lets the boundary above
- * handle it, because a rejected `use cache` scope is never written to the
- * cache in the first place.
+ * The read is deliberately not wrapped in a try/catch. Catching here would
+ * render a network failure as an empty result set — a wrong answer cached like
+ * a right one — whereas a rejected `use cache` scope is never written to the
+ * cache at all, and the boundary above turns the failure into UI that can
+ * retry.
  */
 async function SearchResultsFor({ query }: { query: string }) {
   "use cache";

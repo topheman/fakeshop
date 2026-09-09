@@ -8,6 +8,11 @@ import { CategoryIcon } from "./CategoryIcon";
 /**
  * Takes no props, so it has exactly one cache entry — the whole nav renders
  * once and every route that mounts it reuses the same markup.
+ *
+ * The links prefetch, despite there being 24 of them. A prefetch only asks for
+ * the App Shell of `/category/[slug]`, which is one artifact shared by every
+ * tile whatever its slug, so the grid costs 5 requests and ~3.8 KB in total —
+ * the router never even reaches the other 19 links.
  */
 export async function CategoryList() {
   "use cache";
@@ -26,7 +31,6 @@ export async function CategoryList() {
             href={`/category/${category.slug}`}
             className="flex flex-col items-center rounded-lg border p-4 transition-colors hover:bg-gray-50"
             title={category.name}
-            prefetch={false}
           >
             <CategoryIcon
               category={category.slug}

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { getUserInfos, getOrders } from "@/actions/session";
+import { AccountSkeleton } from "@/components/AccountSkeleton";
 import { PageContainer } from "@/components/Layout";
 import { LogoutButton } from "@/components/LogoutButton";
 import { ScrollTo } from "@/components/ScrollTo";
@@ -17,7 +18,12 @@ export const metadata: Metadata = {
   description: "View and manage your FakeShop account",
 };
 
-// Async child component
+/**
+ * `getUserInfos`, `getOrders` and `getLanguage` all read request headers, so
+ * this whole subtree sits below the App Shell and streams in after the
+ * navigation. The `<h1>` is rendered by the page instead, since it is UI the
+ * visitor can be shown before any of this resolves.
+ */
 async function AccountContent() {
   const userInfos = await getUserInfos();
   const orders = await getOrders();
@@ -31,8 +37,6 @@ async function AccountContent() {
   return (
     <>
       <ScrollTo />
-      <h1 className="mb-6 text-3xl font-bold text-primary">My Account</h1>
-
       <div className="rounded-lg border bg-card p-6 shadow-sm">
         <div className="grid gap-6 md:grid-cols-2">
           <div>
@@ -136,7 +140,8 @@ async function AccountContent() {
 export default function AccountPage() {
   return (
     <PageContainer>
-      <Suspense fallback={<div>Loading account...</div>}>
+      <h1 className="mb-6 text-3xl font-bold text-primary">My Account</h1>
+      <Suspense fallback={<AccountSkeleton />}>
         <AccountContent />
       </Suspense>
     </PageContainer>

@@ -10,6 +10,7 @@ const nextConfig = {
     ],
   },
   cacheComponents: true,
+  partialPrefetching: true,
   typescript: {
     // Type checking runs in `npm run typecheck` on TypeScript 7, which the
     // build cannot use: Next resolves `typescript` from the project root and

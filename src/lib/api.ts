@@ -6,8 +6,8 @@
  * There is no `cache` option on the fetch below. Server-side caching is
  * `./catalog`'s job now. Leaving `cache: "force-cache"` here would put the
  * fetch Data Cache *underneath* every `use cache` scope: a second, untagged
- * layer that `revalidateTag` cannot reach. Measured in phase 4 — after
- * invalidating the tag, a `force-cache` fetch inside the re-run scope returned
+ * layer that `revalidateTag` cannot reach. Measured: after invalidating the
+ * tag, a `force-cache` fetch inside the re-run scope returned
  * the same stale value, while the same fetch without the option returned fresh
  * data. Tag invalidation is silently defeated by the nested layer.
  */
