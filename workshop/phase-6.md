@@ -159,13 +159,65 @@ Ruled out, in order:
 - **Flag not reaching the client.** A client chunk in `.next/static/chunks/` references `partialPrefetching` by name.
 - **Prefetches inlined into the HTML rather than fetched.** `experimental.prefetchInlining` (`maxSize: 2048`, `maxBundleSize: 10240`) is on by default in 16.3 and would explain a low request count, but the served home page HTML contains no inlined prefetch payloads — only the four ordinary `__next_f` chunks.
 
-So the shared-shell behaviour is real in the build output — there is exactly one `category/[slug]` segment artifact — but it is not observable from this app's network panel. The most likely reading is that at four prefetched links the router never reaches the point where sharing would pay, and this app is too small for the flag to show its value. That is a fine reason to keep the flag on and a bad reason to claim a win.
+So the shared-shell behaviour is real in the build output — there is exactly one `category/[slug]` segment artifact — but it is not observable from this app's network panel. The most likely reading is that at four prefetched links the router never reaches the point where sharing would pay, and this app is too small for the flag to show its value. That is a fine reason to keep the flag on and a bad reason to claim a win. If this is ever re-run, the `Next-Router-Prefetch` level is a sharper probe than byte counts: the flag should move the default link from `1` to `3` even when the payload sizes do not budge.
 
 ### What changed in the build
 
 The route table is byte-identical, with the same revalidate and expire on every line. That is the expected result: `partialPrefetching` changes a client prefetch strategy, not a prerendering one. The `/api/og` prerender warning is still there, still waiting for phase 9.
 
 `npm run build`, `npm run lint`, `npm run typecheck` and `npm run test:ci` all clean, 23 tests across 5 files.
+
+## Going further: per-link prefetching with `prefetch={true}`
+
+Everything above uses the default `<Link>`, which under [Partial Prefetching](https://nextjs.org/docs/app/guides/adopting-partial-prefetching) fetches the route's [App Shell](https://nextjs.org/docs/app/glossary#app-shell). This section explores the opt-in alternative documented in [Optimizing prefetching](https://nextjs.org/docs/app/guides/optimizing-prefetching). Nothing here is adopted — it was run to understand what the mechanism can do, and reverted.
+
+### The difference
+
+The App Shell holds the route's static output plus its session-specific content, but not [URL data](https://nextjs.org/docs/app/glossary#url-data) — [`params`](https://nextjs.org/docs/app/api-reference/file-conventions/page#params-optional) and [`searchParams`](https://nextjs.org/docs/app/api-reference/file-conventions/page#searchparams-optional). That is precisely what lets one artifact serve every link to the route. [`prefetch={true}`](https://nextjs.org/docs/app/api-reference/components/link#prefetch) asks the server to run the prerender one step further: it resolves that link's URL data, advances through anything static or cached below it, and stops at the first uncached read. The result is the shell plus this URL's content, so the click paints the real page instead of a skeleton.
+
+The catch is in the arithmetic, not the mechanism. The shell is keyed by route and reused; a `prefetch={true}` payload is keyed by URL and reused by nobody.
+
+|         | App Shell (default)                         | `prefetch={true}`                         |
+| ------- | ------------------------------------------- | ----------------------------------------- |
+| Scope   | one per route                               | one per visible link                      |
+| Content | route's rendered output minus per-link data | same, plus this URL's data resolved       |
+| Cost    | bounded by route count                      | bounded by visible-link count             |
+| Server  | served from the static cache                | a server invocation per prefetchable link |
+
+Measured on a production build of this app, driving a browser through the home page and the category grid:
+
+| Page                              | Default        | With `prefetch={true}` |
+| --------------------------------- | -------------- | ---------------------- |
+| `/` product cards (5 links)       | 5 req / 5241 B | 10 req / 43136 B       |
+| Product titles present in payload | 0 of 5         | 5 of 5                 |
+| `/` category tiles (24 links)     | 5 req / 3778 B | 24 req / ~270 KB       |
+
+It does deliver the final page — that part is not theoretical. But the category grid pays roughly seventy times the bytes to save a skeleton flash on the one tile in twenty-four that gets clicked, and the docs name that exact case: "when many links to a route are visible at once, such as a grid of cards ... prefetch on intent instead."
+
+Worth it when part of the tree depends on URL data, that part has a cache lifetime expressible with [`use cache`](https://nextjs.org/docs/app/api-reference/directives/use-cache) or [`use cache: private`](https://nextjs.org/docs/app/api-reference/directives/use-cache-private), and the traffic justifies the per-link invocation. Not worth it here: the shells already make navigation instant, and the URL-dependent part is the catalog fetch, which streams in behind Suspense either way. If this app ever wants it, the defensible place is one high-intent link — a checkout CTA — not a grid.
+
+### The `Next-Router-Prefetch` header
+
+Prefetch requests are ordinary RSC requests (`RSC: 1`) distinguished by a `Next-Router-Prefetch` level. The level is chosen from the link's fetch strategy in `next/dist/client/components/segment-cache/cache.js`:
+
+| Header value | Fetch strategy    | What comes back                             | Sent when                                     |
+| ------------ | ----------------- | ------------------------------------------- | --------------------------------------------- |
+| _(absent)_   | `Full`            | the whole page                              | `prefetch={true}` without partial prefetching |
+| `2`          | `PPRRuntime`      | App Shell **plus this URL's resolved data** | `prefetch={true}` with partial prefetching    |
+| `3`          | `RuntimeShell`    | the App Shell                               | the default `<Link>` — this app               |
+| `1`          | `LoadingBoundary` | layout down to the nearest `loading.js`     | the pre-Partial-Prefetching model             |
+
+A separate `Next-Router-Segment-Prefetch: /_tree` request (~600 B) fetches the route tree only, which is the small first request in every measurement above.
+
+Two things make these hard to read in DevTools. The `?_rsc=` query parameter is a cache-buster, not a discriminator — the level lives in the headers, so refetching the URL by hand returns the default. And the response body cannot be reopened at all: the router consumes the stream as it arrives, so Chrome has nothing buffered to re-serve and shows "Failed to load response data". The request metadata survives, so **right-click → Copy → Copy as cURL** replays it faithfully, headers included.
+
+### What triggers a prefetch
+
+There is a built-in observer, and it is viewport-based rather than cursor-based. `next/dist/client/components/links.js` creates a single `IntersectionObserver` shared by every `<Link>`, with `rootMargin: '200px'` — links are prefetched 200 px before they scroll into view. That is what holds the category grid to five requests instead of twenty-four.
+
+Hover and touch are wired in too, but they only reprioritize. `onMouseEnter` and `onTouchStart` both call `onNavigationIntent`, which reschedules the queued task at `PrefetchPriority.Intent` (2, above `Default` 1 and `Background` 0). Hovering a default link gets you the App Shell _sooner_, never more of it. Escalating the strategy on hover exists as `experimental.dynamicOnHover` plus `<Link unstable_dynamicOnHover>`, off by default, and it upgrades to `Full` rather than to level 2 — noted, not adopted. Nothing in Next predicts cursor _trajectory_; the docs point at [ForesightJS](https://foresightjs.com/docs/integrations/nextjs) for that.
+
+The documented stable way to gate on intent is a [hover-triggered prefetch](https://nextjs.org/docs/app/guides/prefetching#hover-triggered-prefetch) wrapper flipping `prefetch={active ? null : false}`, and it comes with a mobile caveat worth stating plainly: `onMouseEnter` never fires on a touch device, so that wrapper trades away the IntersectionObserver for a trigger that does not exist there. `onTouchStart` is the substitute and fires at the start of the tap, buying only the touch-to-click delay. The viewport observer is the only prefetch heuristic that works on mobile unchanged, which makes replacing it a regression.
 
 ## Key files
 
@@ -183,4 +235,7 @@ The route table is byte-identical, with the same revalidate and expire on every 
 - **The Suspense fallback is now the route's first paint.** It arrives before the click, not during the render, which promotes every `<div>Loading...</div>` from a 80 ms flash to the whole page.
 - **The fix is hoisting, not skeletons.** Every improvement in this phase was moving URL-independent UI above the boundary so the shared shell could carry it. The skeletons are what is left over once you have done that.
 - **The streaming-era component shape was already the instant-navigation shape.** "Sync root component, async child inside Suspense" was written in March 2025 for streaming and passed the 16.3 URL-data audit untouched.
+- **`prefetch={true}` buys real content at a cost that does not amortize.** The App Shell is one artifact per route; a per-link prefetch is one server invocation per visible link, reused by nobody. It delivers the final page, which is exactly why a grid of cards is the worst place to ask for it.
+- **The prefetch level is visible in the request.** `Next-Router-Prefetch: 3` is the shared shell, `2` is the shell plus one URL's data. Reading the header tells you which strategy a link actually used, which is more reliable than inferring it from payload size.
+- **Prefetch triggering is viewport-based, not cursor-based.** A single shared `IntersectionObserver` with a 200 px margin does the work; hover and touch only reprioritize what is already queued. Any hover-gated wrapper is a desktop optimization that costs mobile the only heuristic it has.
 - **A flag can be correct and unmeasurable.** The build output proves one shell per route; the network panel showed nothing. A demo app with four prefetched links is below the size where the strategy pays.
