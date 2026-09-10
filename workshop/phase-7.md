@@ -17,11 +17,35 @@ The route table is the other half of the before state. Both dynamic segments pre
 
 ## Concepts
 
-### An instant navigation is a claim about the first frame, not about total time
+### What "instant" means
 
-A page that finishes loading in 200 ms is fast. A page that paints its own chrome, its heading and its skeleton in the same frame as the click, then fills in, is _instant_ — and it can be instant while taking longer overall. The two properties are independent, which is why a stopwatch cannot test this. What has to be tested is a boundary: which parts of the UI were available without waiting on the network, and which were not.
+A navigation is **instant** when the destination's UI commits in the same frame as the click. The router does not wait on the network before swapping the page: it renders what it already holds, immediately, and the rest arrives afterwards.
 
-Next.js draws that boundary at prerender time. Everything above the `<Suspense>` boundary that reads request-time data goes into the App Shell; everything below streams in. `instant()` makes the boundary observable by freezing the app on the shell side of it.
+What it already holds is the route's **App Shell** — the part of the page Next.js could prerender without knowing the URL, which means everything down to the first `<Suspense>` boundary that sits above a request-time read. Below that boundary the fallbacks render, and the real content streams into them as the data resolves.
+
+So "instant" is a claim about the **first frame**, not about total time. A page that finishes loading in 200 ms is fast; a page that paints its header, its heading and its skeletons the instant you click, then fills in over the next 400 ms, is instant while being slower overall. The two are independent properties, which is why a stopwatch cannot test this. What has to be tested is the boundary itself: which parts of the UI were available without waiting on the network, and which were not.
+
+The failure this guards against is specific. When something above the boundary starts reading request-time data — a `cookies()` call added to the header, a `params` read hoisted out of a Suspense child — that content falls out of the App Shell. The site does not break and the build does not complain. Clicks just start landing on the old page for a beat before anything changes.
+
+### Three different things are called `instant`
+
+The name is overloaded across the feature, which makes the docs confusing until you separate them. This phase uses one of the three.
+
+|                        | what it is                                                                                                                        | where it runs                             |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| an instant navigation  | the property defined above                                                                                                        | in the browser, in production             |
+| `export const instant` | a route segment config that opts a segment into **validation**: Next.js reports the code that would block a navigation into it    | `next dev`, surfaced in the error overlay |
+| `instant()`            | the `@next/playwright` helper this phase uses, which freezes the app on the shell side of the boundary so a test can assert on it | Playwright, against `next start`          |
+
+The second and third are complementary rather than alternatives. Validation is structural and runs while you type: it can tell you a shell exists, and where a boundary is missing. It cannot tell you the _right content_ is in the shell — that the category heading is there, that the header survived. That is what the e2e tests are for, and it is why this phase adds them rather than relying on the overlay.
+
+### The app is already being validated, without an `instant` export
+
+`export const instant` only works under `cacheComponents`, which this app has had since phase 4. Its default (`experimental.instantInsights.validationLevel: 'warning'`) validates **every** Page and Default segment in development — the explicit export is only needed to opt _out_ with `instant = false`, or to narrow validation to opted-in segments with `'manual-warning'`.
+
+So no `instant` export was added anywhere. Every route in this app is already validated in `next dev`, and phase 6 ran that check and came back clean. Adding `export const instant = true` to the pages would restate the default and leave a reader wondering which routes deliberately lack it.
+
+`instant()` in the tests is a separate mechanism from that validation, despite the shared name, and needs its own opt-in — see the flag below.
 
 ### `instant()` is one cookie
 
@@ -153,7 +177,9 @@ So the decision is not to adopt it here. The instant first paint already comes f
 
 ## Learning outcomes
 
-- Instant is a claim about the first frame. It is tested by freezing the app at a boundary, not by timing it.
+- Instant is a claim about the first frame, not about total time: a page can be instant and slow, or fast and not instant. It is tested by freezing the app at a boundary, not by timing it.
+- `instant` names three things — the property, a route segment config for dev-time validation, and the Playwright helper. Only the last one is what this phase installed, and the first is what it protects.
+- Validation and e2e tests answer different questions. The overlay can say a shell exists; only a test can say the right content is in it.
 - The boundary is one cookie, and the same cookie drives the Navigation Inspector. The test and the DevTools panel show the same thing.
 - A route reached by `goto()` and the same route reached by a click are two different artifacts, and a Suspense boundary can cover one without covering the other.
 - Assertions after the `instant()` scope are not optional. Without them, a test that only checks "the skeleton is visible" would pass on a page that never loads at all.
