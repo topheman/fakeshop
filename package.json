@@ -21,7 +21,10 @@
     "test": "vitest",
     "typecheck": "node node_modules/typescript-native/bin/tsc -p tsconfig.json --noEmit",
     "prepare": "husky && husky install",
-    "test:ci": "vitest run"
+    "test:ci": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
@@ -42,6 +45,8 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@next/playwright": "^16.3.4",
+    "@playwright/test": "^1.63.0",
     "@tanstack/react-query-devtools": "^5.66.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
