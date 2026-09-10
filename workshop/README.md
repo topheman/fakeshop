@@ -38,7 +38,7 @@ Each phase document covers:
 ### Instant navigations
 
 - [x] [Phase 6: Partial prefetching and instant navigations](./phase-6.md)
-- [ ] Phase 7: Locking the behaviour down
+- [x] [Phase 7: Locking the behaviour down](./phase-7.md)
 - [ ] Phase 8: Navigation polish
 
 ### Stretch

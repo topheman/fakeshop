@@ -12,6 +12,7 @@ server actions, streaming, and progressive enhancement.
 
 ```bash
 npm install
+npm run test:e2e:install # downloads Chromium, once, for the end-to-end tests
 ```
 
 ## Running
@@ -20,6 +21,13 @@ npm install
 - production mode: `npm run build && npm run start`
 
 Go to [http://localhost:3000](http://localhost:3000) to see the app running.
+
+## Testing
+
+- unit tests: `npm run test`
+- end-to-end tests: `npm run test:e2e`, or `npm run test:e2e:ui` for the Playwright UI
+
+The end-to-end suite builds the app and serves it on port 3030, so it never collides with a dev server on 3000 — and it has to, because a dev server does not prefetch and the suite asserts on prefetched UI.
 
 ## Notes
 

@@ -34,7 +34,7 @@ When a phase is done, write `workshop/phase-N.md` covering the concepts, what ch
 - React 19.2.8
 - TypeScript 6 for the editor and ESLint, TypeScript 7 for `npm run typecheck` (see [`workshop/phase-2.md`](workshop/phase-2.md)), Tailwind CSS 3.4, `shadcn/ui` components under `src/components/ui`
 - TanStack Query for the client-side search box
-- Vitest with React Testing Library
+- Vitest with React Testing Library for unit tests; Playwright for end-to-end tests in `e2e/`, which assert instant navigations with `instant()` from `@next/playwright` (see [`workshop/phase-7.md`](workshop/phase-7.md))
 - ESLint 9 with a flat `eslint.config.mjs`, Prettier as a plugin
 - Errors from the catalog throw rather than being caught at the read site. `src/components/CatalogErrorBoundary.tsx` is a `catchError` boundary for subtrees, `src/app/(shop)/error.tsx` and `src/app/(checkout)/error.tsx` are the route-level ones (see [`workshop/phase-5.md`](workshop/phase-5.md)).
 - `partialPrefetching` is on, so a `<Link>` prefetches the route's shared App Shell and every `<Suspense>` fallback is the route's first paint rather than a mid-stream flash. Keep URL-independent UI above the boundary and read `params`/`searchParams` inside it (see [`workshop/phase-6.md`](workshop/phase-6.md)).
@@ -44,6 +44,8 @@ When a phase is done, write `workshop/phase-N.md` covering the concepts, what ch
 
 - ALWAYS ASK FOR CONFIRMATION before installing a new dependency.
 - `npm run lint`, `npm run lint:fix`, `npm run test`, `npm run typecheck`, `npm run build`.
+- `npm run test:e2e` builds the app and serves it on port 3030, so it never touches the dev server on 3000. It needs Chromium, which `npm run test:e2e:install` downloads once. Nothing downloads a browser on `npm install` — keep it that way, Vercel runs the same install.
+- The end-to-end suite only works against a production build with `NEXT_E2E_TESTING=1`, which `playwright.config.ts` sets for itself. Do not set `exposeTestingApiInProductionBuild` to a bare `true`; it must never ship to the live site.
 - Write tests for logic you add. The existing suite is thin, which is fine.
 - Format on save is on, pre-commit hooks run lint, format, tests and typecheck on staged files.
 - DO NOT start a dev server on your own. I will run `next dev` at http://localhost:3000. This covers the dev server only: when a task needs performance measurements from a running app, build and start the **production** server (`npm run build`, `npm start`) on your own. Some things only show up in a running server's log — what happens on a second request to an already-warm page, for instance — and `next build` output cannot show them.
