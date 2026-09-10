@@ -4,9 +4,9 @@
 
 ## Current phase
 
-**Phase 7: Locking the behaviour down** — not started. Add Playwright and write `instant()` assertions for the navigations phase 6 made fast, so a later refactor that adds a `cookies()` read to the header fails a test instead of quietly slowing the site. Then look at `generateStaticParams` on `/product/[slug]` with the new ISR behaviour, where an unprerendered page serves a shell to its first visitor and upgrades in the background. This phase adds a dependency — confirm before installing.
+**Phase 8: Navigation polish** — not started. View Transitions with `<Link transitionTypes>`, and the reworked scroll and focus handling behind `appNewScrollHandler`. Category to product is the obvious transition to animate. `appNewScrollHandler` is experimental, so check whether it is in scope before turning it on.
 
-Phase 6 is done on branch `workshop/phase-6`. Phases 0 through 6 are written up in `workshop/`.
+Phase 7 is done on branch `workshop/phase-7`. Phases 0 through 7 are written up in `workshop/`.
 
 ## Baseline as of 2026-09-02
 
@@ -21,6 +21,21 @@ Measured on `master` at tag **`v1.0.1`** (`fa08514`), clean tree. That tag is th
 - Installed: `next` 16.1.6, `react` 19.0.4. Latest: 16.3.4 and 19.2.8.
 
 ## Completed phases
+
+### Phase 7: Locking the behaviour down
+
+Branch `workshop/phase-7`. Playwright plus `@next/playwright`, and six `instant()` assertions in `e2e/instant-navigation.test.ts` covering the app shell, both dynamic routes on a cold load and on a click, and the fully static home page. `generateStaticParams` was measured and not adopted. No application code changed. Full write-up in [`workshop/phase-7.md`](workshop/phase-7.md).
+
+- **No lifecycle hook was needed to keep Chromium off Vercel.** `playwright@1.63.0` publishes no `install` script, verified against the registry and then observed: `npm install` added four packages and left the browser cache absent. The browser arrives only from an explicit `npm run test:e2e:install`, which local setup and CI run and Vercel never does. No `prepare` entry, no `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD`.
+- **`instant()` is one cookie**, `next-instant-navigation-testing`, and it is the same switch as **Pause on navigations** in the Navigation Inspector. Assertions inside the scope describe the first paint, assertions after it describe what streamed in — and the second set is what stops the first from being a tautology.
+- **The suite must run against a production build**, because `next dev` never prefetches. `experimental.exposeTestingApiInProductionBuild` is gated on `NEXT_E2E_TESTING`, which only `playwright.config.ts` sets, for both halves of `npm run build && npm run start`. Verified from `.next/required-server-files.json`: `false` on a plain build, `true` on the e2e build.
+- **Forgetting the flag fails loudly.** Against a server built without it, `instant()` does not throw — it just returns the fully rendered page (`skeletons: 0 | product links: 5`). Every test asserts a skeleton is visible inside the scope, so that configuration goes red rather than passing vacuously.
+- **The regression probe that failed to fail is the instructive one.** Removing `"use cache"` from `CategoryList` kept the home test green, because `getCategories()` in `src/lib/catalog.ts` is itself cached and the render is still prerenderable. Replacing that scope with `await cookies()` made the data genuinely request-time, the build still passed, and the test went red — the quiet slowdown the phase exists to catch.
+- **`next start` is the wrong place to evaluate `generateStaticParams`.** Its default cache handler keeps `use cache` entries in memory only: a URL already upgraded on disk re-rendered from scratch after a restart, re-running `getProduct`. TTFB was 2–4 ms prerendered or not, because the App Shell is what the first visitor gets either way.
+- **The three-renders-then-one pattern in the server log is the ISR upgrade**, and it happens on every dynamic path whether or not its params were prerendered.
+- Ports: the suite builds and serves on 3030 with `reuseExistingServer: false`. Reusing a dev server on 3000 would silently invalidate every assertion.
+- `e2e/**` is excluded from Vitest, which would otherwise match the specs with its default include and fail on the `@playwright/test` import.
+- Two elements carry `data-prerender-hint` (the search form and the user icon), so a bare attribute selector is a strict-mode violation. Scope it to the `<nav>`.
 
 ### Phase 6: Partial prefetching and instant navigations
 
@@ -117,7 +132,8 @@ Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 t
 - **No `overrides` block.** `next upgrade` adds one pinning the React types across the tree. Dropped in phase 1 and the install resolved cleanly without it.
 - **Skipped the `cache-components-instant-false` codemod** offered for 16.3. It adds `export const instant = false` to every page and layout as an adoption escape hatch, which phase 6 would only have to delete. Vindicated: phase 6 needed no opt-out on any route.
 - **`partialPrefetching` stays on despite being unmeasurable here, decided in phase 6.** Built and served the app with the flag both ways and drove the same browser script against the home page: byte-identical results, 5 requests and ~3778 B either way. Ruled out a stale build (`.next/required-server-files.json` reports `config.partialPrefetching`), the flag not reaching the client (a chunk in `.next/static/chunks/` references it by name), and prefetches being inlined by `experimental.prefetchInlining` (the served HTML carries no inlined payloads). The one-shell-per-route behaviour is visible in the build output — a single `category/[slug].segments/_full.segment.rsc` — but this app only ever prefetches four links, which is below the size where sharing pays. Do not re-run this measurement expecting a different answer; it needs a page with many links to distinct routes.
-- **Tailwind 3.4 stays**, decided in phase 2. A CSS engine migration with real regression risk across every component, no Playwright suite until phase 7 to catch what it breaks, and it teaches nothing about Next.js. Consequence: `eslint-plugin-tailwindcss` stays pinned at 3.18.3, because 4.x requires `tailwindcss ^4`.
+- **`generateStaticParams` stays off `/product/[slug]`, decided in phase 7.** Probed with the five `beauty` products; the build picked them up and the route table listed them, but request-time behaviour was identical to an unprerendered path. The instant first paint comes from the App Shell plus `use cache`, `cacheLife("hours")` re-warms the entry anyway, and the app has no ranking signal to choose which of ~194 products deserve build-time prerendering — "the beauty category" would be a demo artifact dressed as a product decision. Revisit the day a real catalog gives a reason to pick.
+- **Tailwind 3.4 stays**, decided in phase 2. A CSS engine migration with real regression risk across every component, no Playwright suite at the time to catch what it breaks, and it teaches nothing about Next.js. Consequence: `eslint-plugin-tailwindcss` stays pinned at 3.18.3, because 4.x requires `tailwindcss ^4`.
 - **Type checking runs once, in `npm run typecheck`, on TypeScript 7.** `next build` has `typescript.ignoreBuildErrors: true`, which is only safe because `vercel.json` sets `buildCommand` to `npm run typecheck && npm run build`. Do not remove that file without putting the gate somewhere else — merging to `master` is the production deploy.
 - **TypeScript 6 keeps the `typescript` name; 7 is `typescript-native` and is invoked by explicit path.** TypeScript 7 ships no API, so anything that imports the compiler (`typescript-eslint`, the editor) needs 6. `typescript-estree` declares `>=4.8.4 <6.1.0`, so 6.0.3 is supported and 6.1 will need watching. npm gives `.bin/tsc` to the root `typescript` and creates no bin entry for the alias, silently — never call bare `tsc` in a script.
 
