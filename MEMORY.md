@@ -4,9 +4,11 @@
 
 ## Current phase
 
-**Phase 8: Navigation polish** — not started. View Transitions with `<Link transitionTypes>`, and the reworked scroll and focus handling behind `appNewScrollHandler`. Category to product is the obvious transition to animate. `appNewScrollHandler` is experimental, so check whether it is in scope before turning it on.
+**Phase 9: Root params and the OG image** — not started. A `[lang]` root param read with `next/root-params` in place of `getLanguage()`'s `accept-language` header read, then the `/api/og` prerender warning and the 16.2 `ImageResponse` speedup. The plan calls this the first candidate to cut if the workshop runs long, since it is a feature addition rather than an upgrade.
 
-Phase 7 is done on branch `workshop/phase-7`. Phases 0 through 7 are written up in `workshop/`.
+Phase 8 is done on branch `workshop/phase-8`. Phases 0 through 8 are written up in `workshop/`.
+
+Two items the phase-8 plan listed are still open and would make a phase 8b: directional slides driven by `<Link transitionTypes>`, and a same-route crossfade on `/search`. `appNewScrollHandler` was not touched — it is experimental, which the scope rule excludes.
 
 ## Baseline as of 2026-09-02
 
@@ -21,6 +23,22 @@ Measured on `master` at tag **`v1.0.1`** (`fa08514`), clean tree. That tag is th
 - Installed: `next` 16.1.6, `react` 19.0.4. Latest: 16.3.4 and 19.2.8.
 
 ## Completed phases
+
+### Phase 8: Navigation polish
+
+Branch `workshop/phase-8`. Two commits: a shared-element morph that carries a product image from the grid thumbnail to the hero, and a Suspense reveal that animates every skeleton handing off to its content. React's `<ViewTransition>`, styled with hand-written `::view-transition-*` CSS in `src/app/globals.css`. Route table byte-identical. Full write-up in [`workshop/phase-8.md`](workshop/phase-8.md).
+
+- **The morph only runs on warm navigations, and that is a trade-off rather than a bug.** On the first visit to a product the navigation commit suspends into the App Shell, and React does not degrade — it skips the transition entirely. Exactly one `startViewTransition` call, rejected with `InvalidStateError: Transition was aborted because of invalid state`, and no second call when the content streams in. Diagnosed by elimination over five probe rounds: reduced motion false, document visible, exactly one `view-transition-name` per side, and a hand-rolled `startViewTransition` resolved fine in the same tab. Shared-element morphing wants the destination in the same commit; phases 6 and 7 deliberately made that commit render a param-independent shell. The instant paint wins.
+- **Naming the skeleton's placeholder does not fix the cold path.** It is what `ProductCardLoading` now does, and it cannot help, because React skips the transition before pairing is ever considered. The blur-in visible on a first visit is `placeholder="blur"` on the hero being swapped for the decoded photo, with no animation on it — not a view transition.
+- **`share` outranks `enter` and `exit`.** A matching `name` across the commit promotes two elements into one moving object; without a name it is a real unmount and a real mount. That is the whole difference between the product images (`name` + `share="morph"`) and the `Reveal` wrappers (unnamed, `exit`/`enter`).
+- **`default="none"` without an explicit `share` silently turns a morph into a crossfade**, because `default` is the fallback for every unset trigger. Every call site here spells out both.
+- **`<ViewTransition>` props serialize through a `use cache` scope.** Verified by curl against a production build: `{"name":"product-image-5","share":"morph","default":"none"}` appears inside the cached `CategoryProducts` payload. Transitions and Cache Components compose with no special handling.
+- **The grid and the hero request the byte-identical URL only because `images.unoptimized: true`.** That disables `srcSet` generation (`node_modules/next/dist/shared/lib/get-img-props.js:96`), so the hero is a memory-cache hit on a warm navigation. Turning image optimisation on would cost the morph its destination.
+- **`blurDataURL` without `placeholder="blur"` is ignored by `next/image`.** `ProductGrid` and `ProductCardLoading` had both carried that dead prop since before the workshop. Fixed on the grid and the hero; `ProductGridSkeleton.tsx:15` still has one.
+- `enter`/`exit` never fire in a `layout.tsx`, because a layout persists across navigations. Only Transitions, `<Suspense>` and `useDeferredValue` activate any of this — a plain `setState` does not.
+- `::view-transition { pointer-events: none; }` is not cosmetic: the overlay covers the viewport for the length of the animation and would otherwise swallow a click landing mid-transition.
+- `@types/react` declares `ViewTransition` only in its canary entry point, hence `src/types/react-canary.d.ts`.
+- **Still unverified**: whether the Suspense reveal actually animates on a cold product load. The wiring and the CSS both ship; the automation browser became unusable before it could be observed. One line in a real browser settles it: `document.getAnimations().filter(a => a.effect?.pseudoElement?.includes('view-transition'))`.
 
 ### Phase 7: Locking the behaviour down
 
@@ -129,6 +147,8 @@ Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 t
 - **The error fallback needs JavaScript, accepted in phase 5.** With the boundaries in place a catalog outage shows a no-JS visitor the loading skeleton and nothing else, where phase 4's `try/catch` server-rendered a readable paragraph. Christophe chose to ship the boundaries anyway and document it: the alternatives are to keep caching an error as a value and give up `retry()`, or to hand-roll a server-rendered message plus a `router.refresh()` button, and both give back the thing the phase is for. The failure mode is a catalog outage seen by a no-JS visitor, which is a narrow intersection.
 - **`error.tsx` goes inside each route group, not at `src/app/`, decided in phase 5.** A boundary never wraps the `layout.tsx` beside it, so at `src/app/` it would sit above `(shop)/layout.tsx` and take the header, cart and footer down with the page. One directory lower the chrome survives. `(checkout)/error.tsx` is not decoration: `/checkout` calls `getProduct` per cart line with no handling anywhere in the path, so before phase 5 an outage there hit Next's built-in 500 page.
 - **The app has no proxy, decided in phase 3.** `src/middleware.ts` was renamed to `src/proxy.ts` by the codemod and then deleted, because its only job — seeding empty `cart` and `orders` cookies — was a default that belongs in `src/actions/session.ts`. If a future phase wants a proxy back, the bar is something that genuinely has to run in front of the app.
+
+- **The morph is accepted as warm-navigation-only, decided in phase 8.** The alternative is to give the product page a route-level `loading.tsx`-free path that renders the hero in the navigation commit, which means reading `params` above the Suspense boundary and giving back the instant first paint phases 6 and 7 exist for. An instant skeleton beats an animation on a slow page, so the morph stays a warm-path enhancement and the cold path gets the blur-in.
 
 - **No `overrides` block.** `next upgrade` adds one pinning the React types across the tree. Dropped in phase 1 and the install resolved cleanly without it.
 - **Skipped the `cache-components-instant-false` codemod** offered for 16.3. It adds `export const instant = false` to every page and layout as an adoption escape hatch, which phase 6 would only have to delete. Vindicated: phase 6 needed no opt-out on any route.
