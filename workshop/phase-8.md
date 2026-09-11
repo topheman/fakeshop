@@ -198,6 +198,26 @@ So this is a genuine trade-off rather than a defect. Shared-element morphing wan
 
 There is a visible effect on the cold path, but it is not a view transition: the hero's `placeholder="blur"` background is swapped for the decoded photo, with no animation attached. It reads as a blur-in because a blurred 1×1 PNG scaled to 500 px is what was on screen a moment earlier.
 
+## The flicker underneath the animations
+
+Throttled to Slow 4G, every route visibly reflowed when its skeleton handed off to the real content — not a vertical shift but a horizontal one, the whole page body changing width. No animation can hide that, and it predates this phase.
+
+The cause is one missing class in `src/components/Layout.tsx`. `<body>` is `flex min-h-screen flex-col`, and `<main>` was `mx-auto max-w-screen-xl grow` with no width. In a column flex container the cross axis is horizontal, and the flexbox spec is explicit that `align-self: stretch` applies only when the cross size is `auto` **and neither cross-axis margin is `auto`**. `mx-auto` makes both of them auto. So `<main>` was never stretched — it was sized to fit its own content, then centred.
+
+That makes the width of the page a function of whatever is currently inside it. Measured on `/login` in a 1683 px viewport, `<main>` was **480 px**; forcing `width: 100%` on it took it straight to its 1280 px cap. A skeleton has a narrow max-content width and the real content has a wide one, so every first paint ended with the entire body jumping outward.
+
+The fix is `w-full`, which gives the element a definite cross size so the auto margins go back to being pure centring:
+
+```tsx
+<main className="mx-auto w-full max-w-screen-xl grow bg-background">
+```
+
+With that in place the handoff is geometrically identical on both sides. Measured by fetching the served shell HTML and swapping it into the loaded page, `/product/[slug]` reports the same numbers in both states — `<main>` 1280, the grid 1248×676 at the same origin, the image box 624×624 at the same origin.
+
+Two smaller mismatches were left over on the category grid, worth 32 px of card height. The real card title was free to wrap to a second line while the skeleton reserved one, and the skeleton's cart button was `size-9` against a real `Button` that is `h-10`. The title is now `line-clamp-2 h-14` in both, which also stops cards in the same row disagreeing about their height, and the button placeholder matches. Skeleton and content cards now measure 416 px alike.
+
+One thing the screenshots showed is a dev-only artifact: `/` flashes its category skeleton in `next dev` but never in production, because `/` prerenders `CategoryList` at build time and serves it complete in the shell.
+
 ## Measurements
 
 The route table is **byte-identical** to phase 7 after both commits. Neither `<ViewTransition>` nor the CSS moves anything in or out of Partial Prerendering:

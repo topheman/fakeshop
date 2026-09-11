@@ -12,7 +12,6 @@ export function ProductGridSkeleton() {
           <div className="w-full overflow-hidden rounded-lg bg-gray-200">
             <Image
               src="/placeholder.svg"
-              blurDataURL="/placeholder.svg"
               alt={""}
               width={200}
               height={200}
@@ -20,11 +19,14 @@ export function ProductGridSkeleton() {
             />
           </div>
           {/* Title skeleton */}
-          <div className="mt-4 h-7 w-3/4 rounded bg-gray-300 text-lg font-semibold" />
+          <div className="mt-4 h-14">
+            <div className="h-6 w-3/4 rounded bg-gray-300" />
+            <div className="mt-1 h-6 w-1/2 rounded bg-gray-300" />
+          </div>
           {/* Price and button skeleton */}
           <div className="mt-1 flex items-center justify-between text-lg font-medium">
             <div className="h-7 w-24 rounded bg-gray-300" />
-            <div className="size-9 rounded-full bg-gray-300" />
+            <div className="size-10 rounded bg-gray-300" />
           </div>
         </div>
       ))}

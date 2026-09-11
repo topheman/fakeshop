@@ -40,7 +40,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
               />
             </ViewTransition>
           </div>
-          <h2 className="mt-4 text-lg font-semibold text-gray-700">
+          <h2 className="mt-4 line-clamp-2 h-14 text-lg font-semibold text-gray-700">
             {product.title}
           </h2>
           <p className="mt-1 flex items-center justify-between text-lg font-medium text-gray-900">
