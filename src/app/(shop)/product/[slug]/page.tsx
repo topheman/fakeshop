@@ -1,14 +1,16 @@
 import { cacheLife, cacheTag } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { PageContainer } from "@/components/Layout";
 import { ProductCardLoading } from "@/components/ProductCardLoading";
 import { getProduct } from "@/lib/catalog";
+import { IMAGE_BLUR_PLACEHOLDER } from "@/utils/constants";
 import { extractProductIdFromSlug } from "@/utils/slugUtils";
+import { productImageTransitionName } from "@/utils/viewTransitions";
 
 /**
  * Reads `params`, which is request-time data. This is the cache boundary:
@@ -61,13 +63,26 @@ async function ProductDetail({ id }: { id: number }) {
         </Link>
       </h1>
       <div>
-        <Image
-          src={product.thumbnail || "/placeholder.svg"}
-          alt={product.title}
-          width={500}
-          height={500}
-          className="h-auto w-full rounded-lg object-cover"
-        />
+        {/*
+          The second half of the morph. The blur placeholder matters here: the
+          hero is the destination the transition animates towards, and an
+          <Image> that has not decoded yet paints nothing for it to land on.
+        */}
+        <ViewTransition
+          name={productImageTransitionName(product.id)}
+          share="morph"
+          default="none"
+        >
+          <Image
+            src={product.thumbnail || "/placeholder.svg"}
+            placeholder="blur"
+            blurDataURL={IMAGE_BLUR_PLACEHOLDER}
+            alt={product.title}
+            width={500}
+            height={500}
+            className="h-auto w-full rounded-lg object-cover"
+          />
+        </ViewTransition>
       </div>
       <div>
         <p className="mb-4 text-gray-600">{product.description}</p>

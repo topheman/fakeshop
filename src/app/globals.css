@@ -121,3 +121,38 @@
   opacity: 0;
   animation: scaleInBouncy 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
 }
+
+/*
+  A product image keeps its identity from the grid thumbnail through to the
+  hero on the product page. `share="morph"` on the React <ViewTransition> puts
+  a `morph` class on the transition, which is what these selectors match.
+*/
+::view-transition-group(.morph) {
+  animation-duration: 400ms;
+}
+
+::view-transition-image-pair(.morph) {
+  animation-name: morph-blur;
+}
+
+/* Hides the pixel interpolation while the old and new snapshots are both visible. */
+@keyframes morph-blur {
+  30% {
+    filter: blur(3px);
+  }
+}
+
+/* The transition overlay covers the page, so without this a click landing
+   mid-animation is swallowed instead of reaching the link underneath. */
+::view-transition {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-delay: 0s !important;
+    animation-duration: 0s !important;
+  }
+}

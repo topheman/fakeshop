@@ -1,29 +1,51 @@
 "use client";
 
 import Image from "next/image";
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, ViewTransition } from "react";
 
-import { slugToDisplayName } from "@/utils/slugUtils";
+import { extractProductIdFromSlug, slugToDisplayName } from "@/utils/slugUtils";
+import { productImageTransitionName } from "@/utils/viewTransitions";
 
 /** The URL never changes while this fallback is on screen, so there is nothing to subscribe to. */
 const subscribe = () => () => {};
 
 const getServerTitle = () => "Loading...";
 
-function getClientTitle() {
+function getProductSlug() {
   const pathname = window.location.pathname;
   if (pathname.startsWith("/product/")) {
-    const slug = pathname.split("/").pop();
-    if (slug) {
-      // Remove the ID from the slug to get a readable title
-      return slugToDisplayName(slug.split("-").slice(0, -1).join("-"));
-    }
+    return pathname.split("/").pop() ?? null;
+  }
+  return null;
+}
+
+function getClientTitle() {
+  const slug = getProductSlug();
+  if (slug) {
+    // Remove the ID from the slug to get a readable title
+    return slugToDisplayName(slug.split("-").slice(0, -1).join("-"));
   }
   return getServerTitle();
 }
 
+const getServerProductId = () => null;
+
+function getClientProductId() {
+  const slug = getProductSlug();
+  if (!slug) {
+    return null;
+  }
+  const id = extractProductIdFromSlug(slug);
+  return id === -1 ? null : id;
+}
+
 export function ProductCardLoading() {
   const title = useSyncExternalStore(subscribe, getClientTitle, getServerTitle);
+  const productId = useSyncExternalStore(
+    subscribe,
+    getClientProductId,
+    getServerProductId,
+  );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2">
@@ -31,14 +53,29 @@ export function ProductCardLoading() {
         {title}
       </h1>
       <div className="w-full overflow-hidden rounded-lg bg-gray-200">
-        <Image
-          src="/placeholder.svg"
-          blurDataURL="/placeholder.svg"
-          alt=""
-          width={500}
-          height={500}
-          className="size-full object-cover object-center"
-        />
+        {/*
+          Carries the same transition name as the thumbnail that was clicked,
+          so the morph lands on content that is already painted. The real photo
+          may still be in flight here; this placeholder is a local asset and is
+          not.
+        */}
+        <ViewTransition
+          name={
+            productId === null
+              ? undefined
+              : productImageTransitionName(productId)
+          }
+          share="morph"
+          default="none"
+        >
+          <Image
+            src="/placeholder.svg"
+            alt=""
+            width={500}
+            height={500}
+            className="size-full object-cover object-center"
+          />
+        </ViewTransition>
       </div>
       <div className="flex flex-col">
         {/* Description skeleton */}
