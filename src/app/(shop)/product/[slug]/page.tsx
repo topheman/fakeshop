@@ -7,6 +7,7 @@ import { AddToCartButton } from "@/components/AddToCartButton";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { PageContainer } from "@/components/Layout";
 import { ProductCardLoading } from "@/components/ProductCardLoading";
+import { RevealContent, RevealFallback } from "@/components/Reveal";
 import { getProduct } from "@/lib/catalog";
 import { IMAGE_BLUR_PLACEHOLDER } from "@/utils/constants";
 import { extractProductIdFromSlug } from "@/utils/slugUtils";
@@ -103,8 +104,16 @@ export default function ProductPage({
 }) {
   return (
     <PageContainer>
-      <Suspense fallback={<ProductCardLoading />}>
-        <ProductContent params={params} />
+      <Suspense
+        fallback={
+          <RevealFallback>
+            <ProductCardLoading />
+          </RevealFallback>
+        }
+      >
+        <RevealContent>
+          <ProductContent params={params} />
+        </RevealContent>
       </Suspense>
     </PageContainer>
   );

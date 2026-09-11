@@ -2,6 +2,7 @@ import { Suspense } from "react";
 
 import { PageContainer } from "@/components/Layout";
 import { ProductGridLoading } from "@/components/ProductGridLoading";
+import { RevealContent, RevealFallback } from "@/components/Reveal";
 import { SearchResults } from "@/components/SearchResults";
 
 // Async child component
@@ -32,8 +33,16 @@ export default function SearchPage({
 }) {
   return (
     <PageContainer>
-      <Suspense fallback={<ProductGridLoading />}>
-        <SearchContent searchParams={searchParams} />
+      <Suspense
+        fallback={
+          <RevealFallback>
+            <ProductGridLoading />
+          </RevealFallback>
+        }
+      >
+        <RevealContent>
+          <SearchContent searchParams={searchParams} />
+        </RevealContent>
       </Suspense>
     </PageContainer>
   );

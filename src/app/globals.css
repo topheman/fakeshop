@@ -156,3 +156,46 @@
     animation-duration: 0s !important;
   }
 }
+
+/*
+  A Suspense fallback handing off to the content it was standing in for. The
+  exit is quick so the placeholder stops competing for attention; the enter
+  fade waits for it to finish, while the slide runs longer than both.
+*/
+:root {
+  --reveal-exit: 150ms;
+  --reveal-enter: 210ms;
+  --reveal-move: 400ms;
+}
+
+::view-transition-old(.slide-down) {
+  animation:
+    var(--reveal-exit) ease-out both reveal-fade reverse,
+    var(--reveal-exit) ease-out both reveal-slide reverse;
+}
+
+::view-transition-new(.slide-up) {
+  animation:
+    var(--reveal-enter) ease-in var(--reveal-exit) both reveal-fade,
+    var(--reveal-move) ease-in both reveal-slide;
+}
+
+@keyframes reveal-fade {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes reveal-slide {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
