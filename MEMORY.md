@@ -4,6 +4,8 @@
 
 ## Current phase
 
+**Phase 8b: Finishing the navigation polish** — done on branch `workshop/phase-8b`. Directional slides driven by `<Link transitionTypes>` and `router.push(href, { transitionTypes })`, a same-route crossfade on `/search`, and the phase-8 open question settled in a real browser: the Suspense reveal does animate. Five new Playwright assertions record `document.startViewTransition` and read the types, classes and animations from `ready`. Full write-up in [`workshop/phase-8b.md`](workshop/phase-8b.md).
+
 **Phase 9: The OG image** — done on branch `workshop/phase-9`. `/api/og` became `src/app/opengraph-image.tsx`, importing `ImageResponse` from `next/og`, with the icon and font reads hoisted to module scope. The route went from `ƒ` dynamic to `○` static and the prerender warning is gone. The `[lang]` root param the plan paired with this was dropped before the phase started — see Decisions. Full write-up in [`workshop/phase-9.md`](workshop/phase-9.md).
 
 Phases 0 through 9 are written up in `workshop/`, which completes the plan.
@@ -14,7 +16,7 @@ Phases 0 through 9 are written up in `workshop/`, which completes the plan.
 - **`@vercel/og` was never being used.** `next/dist/build/create-compiler-aliases.js:132` maps `'@vercel/og$'` to `next/dist/server/og/image-response`, the same module `next/og` resolves to. The dependency was installed on every build and imported by nothing; removing it saves install time and zero function bytes.
 - **Phase 2's 20.6 MB attribution was wrong, and phase-2.md is corrected.** The route's `.nft.json` trace is 23.1 MB before and 23.2 MB after: 17.7 MB of it is `@img/sharp-libvips-*/libvips-cpp.dylib`, which `ImageResponse` needs to decode image sources, and 3.07 MB is Next's compiled `@vercel/og`. The `vips2png`/`svgload_buffer` strings in the build failure are libvips. Getting that 18 MB out would mean getting `sharp` out of `ImageResponse`, which is not an app-level choice.
 
-With phase 9 done the plan is complete. Two items the phase-8 plan listed are still open and would make a phase 8b if the workshop continues: directional slides driven by `<Link transitionTypes>`, and a same-route crossfade on `/search`. `appNewScrollHandler` was not touched — it is experimental, which the scope rule excludes.
+The ten-phase plan is complete, and phase 8b has since closed the two items phase 8 left open. `appNewScrollHandler` was not touched — it is experimental, which the scope rule excludes.
 
 ## Baseline as of 2026-09-02
 
@@ -30,6 +32,22 @@ Measured on `master` at tag **`v1.0.1`** (`fa08514`), clean tree. That tag is th
 
 ## Completed phases
 
+### Phase 8b: Finishing the navigation polish
+
+Branch `workshop/phase-8b`. Three commits: directional slides plus header anchoring, the same-route crossfade on `/search`, and the test work. Route table byte-identical again. Full write-up in [`workshop/phase-8b.md`](workshop/phase-8b.md).
+
+- **Transition types carry information the React tree does not contain.** Forward and back produce identical commits — one page unmounts, another mounts — so no trigger, `name` or class can tell them apart. `<Link transitionTypes>` and `router.push(href, { transitionTypes })` call `addTransitionType` inside the Transition the navigation already runs on, and a `ViewTransitionClassPerType` object (`NAV_DIRECTION` in `src/utils/viewTransitions.ts`) maps the type to a class. The trigger decides _whether_ a boundary animates; the type decides _which_ animation.
+- **`PageContainer` is the only component every page mounts and no layout does**, which makes it one edit rather than seven for the slide, and gives any future page the behaviour for free. All seven pages render it.
+- **Direction is opt-in per link, on purpose.** It is a claim about the app's hierarchy and only the link knows which way it goes. Everything untagged — the browser back button, the cart, checkout — falls through `default: "none"` and does not animate.
+- **A same-route transition needs a `key`.** `/search?q=a` to `/search?q=b` is the app's only UI-reachable same-route navigation. Without a key React reconciles the grid in place, nothing mounts or unmounts, and there is no old/new pair to animate.
+- **Anything not in its own group is part of the root snapshot, and the page group paints over it.** The first frozen frame showed the outgoing category grid drawn across the header bar. Fixed by naming the header, giving its group `z-index: 100` and `animation: none`, and `display: none` on the old snapshot.
+- **`KeyframeEffect.pseudoElement` reports the transition _name_, not the class.** For an unnamed `<ViewTransition>` that is a generated string like `_t_0_`, so three tests failed against a correct implementation. Assert on the computed `viewTransitionClass` and the animation names instead.
+- **Page loads run transitions of their own** — every Suspense boundary that resolves is one — and they arrive after the content is already on screen. A `settle()` helper polls until the recorded count stops growing, or one of them lands in the slot reserved for the navigation.
+- **Screenshots have to be frozen mid-transition to show anything**, because the overlay tree is gone by the time the navigation settles. Pausing every `::view-transition*` animation at 50% inside `ready` makes the frame deterministic. It deadlocks if it catches the initial load's reveal, so it sits behind a flag set immediately before the click.
+- **Measure again before believing a diagnosis.** An apparent vertical squash of the outgoing page was Playwright's scroll position, not the group's size morph. The rule added to "fix" it produced a byte-identical frame and was reverted.
+- **This repo runs two Reacts, and adding `<ViewTransition>` to `PageContainer` made it visible.** The App Router uses the `19.3.0-experimental` canary at `next/dist/compiled/react-experimental`; Vitest uses the stable `19.2.8` at the project root, which does not export `ViewTransition`. They cannot be aliased together: Testing Library is externalized and resolves `react-dom` through Node, which ignores the bundler's aliases, so the renderer and the components land on two different Reacts with a null dispatcher between them. Confirmed by pointing the alias at a nonexistent path and getting no resolution error. `vitest.setup.ts` stands a passthrough in instead — jsdom implements no view transitions, so there is nothing a unit test could observe anyway.
+- The repo's Vitest config is `vitest.config.mts`, not `.ts`. A `.ts` file added beside it takes precedence and shadows it silently.
+
 ### Phase 8: Navigation polish
 
 Branch `workshop/phase-8`. Two commits: a shared-element morph that carries a product image from the grid thumbnail to the hero, and a Suspense reveal that animates every skeleton handing off to its content. React's `<ViewTransition>`, styled with hand-written `::view-transition-*` CSS in `src/app/globals.css`. Route table byte-identical. Full write-up in [`workshop/phase-8.md`](workshop/phase-8.md).
@@ -40,12 +58,12 @@ Branch `workshop/phase-8`. Two commits: a shared-element morph that carries a pr
 - **`default="none"` without an explicit `share` silently turns a morph into a crossfade**, because `default` is the fallback for every unset trigger. Every call site here spells out both.
 - **`<ViewTransition>` props serialize through a `use cache` scope.** Verified by curl against a production build: `{"name":"product-image-5","share":"morph","default":"none"}` appears inside the cached `CategoryProducts` payload. Transitions and Cache Components compose with no special handling.
 - **The grid and the hero request the byte-identical URL only because `images.unoptimized: true`.** That disables `srcSet` generation (`node_modules/next/dist/shared/lib/get-img-props.js:96`), so the hero is a memory-cache hit on a warm navigation. Turning image optimisation on would cost the morph its destination.
-- **`blurDataURL` without `placeholder="blur"` is ignored by `next/image`.** `ProductGrid` and `ProductCardLoading` had both carried that dead prop since before the workshop. Fixed on the grid and the hero; `ProductGridSkeleton.tsx:15` still has one.
+- **`blurDataURL` without `placeholder="blur"` is ignored by `next/image`.** `ProductGrid` and `ProductCardLoading` had both carried that dead prop since before the workshop. Fixed on the grid and the hero, and the repo now has no unpaired one left: `IMAGE_BLUR_PLACEHOLDER` is used in `ProductGrid.tsx` and `product/[slug]/page.tsx` only, both alongside `placeholder="blur"`.
 - `enter`/`exit` never fire in a `layout.tsx`, because a layout persists across navigations. Only Transitions, `<Suspense>` and `useDeferredValue` activate any of this — a plain `setState` does not.
 - `::view-transition { pointer-events: none; }` is not cosmetic: the overlay covers the viewport for the length of the animation and would otherwise swallow a click landing mid-transition.
 - `@types/react` declares `ViewTransition` only in its canary entry point, hence `src/types/react-canary.d.ts`.
 - **The app had a horizontal layout shift on every first paint, and it was one missing class.** `<body>` is a column flex container and `<main>` was `mx-auto max-w-screen-xl grow` with no width. Auto cross-axis margins suppress `align-self: stretch`, so `<main>` sized to its content: measured 480 px on `/login` in a 1683 px viewport, against its 1280 px cap. Adding `w-full` fixed it, verified by swapping the served shell HTML into the loaded page and getting identical geometry on both sides. Visible by throttling to Slow 4G. Also matched two skeleton mismatches on the category card, a title free to wrap to a second line (now `line-clamp-2 h-14` in both) and a `size-9` button placeholder against a real `h-10` `Button`.
-- **Still unverified**: whether the Suspense reveal actually animates on a cold product load. The wiring and the CSS both ship; the automation browser became unusable before it could be observed. One line in a real browser settles it: `document.getAnimations().filter(a => a.effect?.pseudoElement?.includes('view-transition'))`.
+- **Answered in phase 8b**: the Suspense reveal does animate on a cold product load. A cold `/product/iphone-9-1` runs a second, untagged transition with the `reveal-slide` and `reveal-fade` keyframes, and its page container class is `none` — a boundary resolving is not a navigation, so the page must not slide underneath it. It is now an e2e assertion.
 
 ### Phase 7: Locking the behaviour down
 
