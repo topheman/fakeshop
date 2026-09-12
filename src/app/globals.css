@@ -207,9 +207,16 @@
   competing for attention, and the new page's fade waits for it to finish while
   the slide runs longer than both.
 
+  This animates the root snapshot rather than a named page element, because the
+  root is the one name the browser guarantees has exactly one old and one new
+  snapshot. A React `<ViewTransition>` around the page generates a separate name
+  per side, and Safari captures both an old and a new snapshot for each of them,
+  so the outgoing page is drawn on top of the incoming one for the whole
+  transition.
+
   Only navigations tagged with `transitionTypes` reach these selectors. The
-  browser's back button, `router.refresh()` and every untagged link fall
-  through `default: "none"` and do not animate.
+  browser's back button, `router.refresh()` and every untagged link get the
+  `animation: none` below and do not move.
 */
 :root {
   --nav-exit: 150ms;
@@ -218,32 +225,39 @@
   --nav-offset: 60px;
 }
 
-::view-transition-old(.nav-forward) {
-  --nav-slide: calc(-1 * var(--nav-offset));
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+html:active-view-transition-type(nav-forward)::view-transition-old(root),
+html:active-view-transition-type(nav-back)::view-transition-old(root) {
   animation:
     var(--nav-exit) ease-in both nav-fade reverse,
     var(--nav-move) ease-in-out both nav-slide reverse;
 }
 
-::view-transition-new(.nav-forward) {
-  --nav-slide: var(--nav-offset);
+html:active-view-transition-type(nav-forward)::view-transition-new(root),
+html:active-view-transition-type(nav-back)::view-transition-new(root) {
   animation:
     var(--nav-enter) ease-out var(--nav-exit) both nav-fade,
     var(--nav-move) ease-in-out both nav-slide;
 }
 
-::view-transition-old(.nav-back) {
-  --nav-slide: var(--nav-offset);
-  animation:
-    var(--nav-exit) ease-in both nav-fade reverse,
-    var(--nav-move) ease-in-out both nav-slide reverse;
-}
-
-::view-transition-new(.nav-back) {
+html:active-view-transition-type(nav-forward)::view-transition-old(root) {
   --nav-slide: calc(-1 * var(--nav-offset));
-  animation:
-    var(--nav-enter) ease-out var(--nav-exit) both nav-fade,
-    var(--nav-move) ease-in-out both nav-slide;
+}
+
+html:active-view-transition-type(nav-forward)::view-transition-new(root) {
+  --nav-slide: var(--nav-offset);
+}
+
+html:active-view-transition-type(nav-back)::view-transition-old(root) {
+  --nav-slide: var(--nav-offset);
+}
+
+html:active-view-transition-type(nav-back)::view-transition-new(root) {
+  --nav-slide: calc(-1 * var(--nav-offset));
 }
 
 @keyframes nav-fade {
@@ -266,10 +280,9 @@
 
 /*
   The header is the fixed reference point a directional slide is read against,
-  so it is named and pulled out of the animation entirely. Without this it stays
-  part of the root snapshot, which the page group paints over: measured at the
-  midpoint of a forward navigation, the outgoing category grid was drawn across
-  the header bar.
+  so it is named and pulled out of the root snapshot entirely. Without this it
+  slides with the rest of the page and the whole viewport moves, which reads as
+  a jolt rather than as a page arriving.
 
   `display: none` on the old snapshot avoids two headers being briefly visible,
   and the `z-index` keeps the one that remains above the sliding content.

@@ -12,6 +12,19 @@ import { expect, test, type Page } from "@playwright/test";
  * loading fallback, so its presence proves the shell is on screen and its
  * absence proves the real content replaced it.
  */
+/**
+ * Chromium only. `instant()` holds a navigation at its prefetched shell through
+ * a cookie the app watches for changes; in WebKit the lock never engages, the
+ * dynamic data streams in as usual and every skeleton assertion below silently
+ * describes a fully rendered page instead of a shell. A test that passes for
+ * the wrong reason is worse than one that does not run, and the shells
+ * themselves are framework behaviour rather than anything engine-specific.
+ */
+test.skip(
+  ({ browserName }) => browserName !== "chromium",
+  "instant() does not hold the navigation in WebKit",
+);
+
 const skeleton = (page: Page) => page.locator("main .animate-pulse");
 
 /** Product 1 in the dummyjson catalog. Any product would do. */

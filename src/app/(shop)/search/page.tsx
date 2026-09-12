@@ -4,6 +4,7 @@ import { PageContainer } from "@/components/Layout";
 import { ProductGridLoading } from "@/components/ProductGridLoading";
 import { RevealContent, RevealFallback } from "@/components/Reveal";
 import { SearchResults } from "@/components/SearchResults";
+import { exceptNavigation } from "@/utils/viewTransitions";
 
 /**
  * Reads `searchParams`, which is request-time data, so it sits inside the
@@ -34,7 +35,7 @@ async function SearchContent({
         key={query}
         name="search-results"
         share="auto"
-        enter="auto"
+        enter={exceptNavigation("auto")}
         default="none"
       >
         <SearchResults query={query} />

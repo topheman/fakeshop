@@ -17,17 +17,21 @@ export function productImageTransitionName(id: number): string {
  * stays untagged and animates not at all: the browser's own back button, the
  * cart, checkout. A direction is a claim about the app's hierarchy, so it has
  * to be made link by link rather than inferred.
+ *
+ * The types themselves are what the `:active-view-transition-type()` rules in
+ * `globals.css` match; nothing here maps them onto view transition classes.
  */
 export const NAV_FORWARD = ["nav-forward"];
 export const NAV_BACK = ["nav-back"];
 
 /**
- * Maps those types onto the view transition classes the CSS in `globals.css`
- * targets. Shared by `enter` and `exit`, because a single navigation runs the
- * old page's exit and the new page's enter under the same type.
+ * A view transition class that applies to everything except a directional
+ * navigation. The directional slide animates the root snapshot, and any element
+ * a `<ViewTransition>` activates is named out of that snapshot, so an animation
+ * about something else — a Suspense handoff, a search query changing in place —
+ * has to stand down during a navigation or it punches a hole in the page as it
+ * slides.
  */
-export const NAV_DIRECTION = {
-  "nav-forward": "nav-forward",
-  "nav-back": "nav-back",
-  default: "none",
-};
+export function exceptNavigation(className: string) {
+  return { "nav-forward": "none", "nav-back": "none", default: className };
+}

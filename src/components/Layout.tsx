@@ -1,7 +1,6 @@
 import { ViewTransition } from "react";
 
 import { cn } from "@/lib/utils";
-import { NAV_DIRECTION } from "@/utils/viewTransitions";
 
 import { Cart } from "./Cart";
 import Footer from "./Footer";
@@ -27,11 +26,16 @@ export function Layout({
 }
 
 /**
- * Every page renders this, and nothing else does, which is what makes it the
- * right place for the directional slide. A layout persists across a navigation
- * so its `enter` and `exit` never fire; a component the page itself mounts is
- * unmounted and remounted on every route change, which is exactly the pair the
- * transition needs.
+ * The box every page renders its content into, and the reason a navigation
+ * animates at all: React only calls `document.startViewTransition` when a
+ * `<ViewTransition>` is part of the update, so without one here a tagged link
+ * would change the page with no transition for the CSS to hook into.
+ *
+ * `default="none"` is doing real work. It starts the transition without giving
+ * this element a `view-transition-name`, which keeps the page inside the root
+ * snapshot — and the root is what the directional slide in `globals.css`
+ * animates. Naming it instead would cut the page out of that snapshot and leave
+ * a hole where the sliding content should be.
  */
 export function PageContainer({
   children,
@@ -41,7 +45,7 @@ export function PageContainer({
   className?: string;
 }) {
   return (
-    <ViewTransition enter={NAV_DIRECTION} exit={NAV_DIRECTION} default="none">
+    <ViewTransition default="none">
       <div className={cn("container mx-auto px-4 py-8", className)}>
         {children}
       </div>

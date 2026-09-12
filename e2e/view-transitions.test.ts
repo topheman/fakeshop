@@ -5,16 +5,18 @@ import { expect, test, type Page } from "@playwright/test";
  * `::view-transition-*` pseudo-elements in an overlay tree that is torn down
  * before the navigation settles. So the suite records each one as it happens.
  * `document.startViewTransition` is wrapped before any app code runs, and the
- * `ready` promise is the single moment where the transition types, the classes
- * React resolved from them, and the animations the CSS matched are all
- * observable at once.
+ * `ready` promise is the single moment where the transition types, the
+ * pseudo-elements the browser built, and the animations the CSS matched are all
+ * observable at once. Screenshots and video are not an option — neither
+ * Chromium's nor WebKit's Playwright capture includes the view transition
+ * layer, so a recorded navigation looks like an instant swap either way.
  *
- * Two things are captured because neither is sufficient alone. The class on the
- * page container proves the type reached the right branch of `NAV_DIRECTION` —
- * it is the only place `nav-forward` and `nav-back` are distinguishable, since
- * both run the same keyframes with a different offset. The animation names
- * prove the stylesheet actually matched that class rather than the browser
- * falling back to its own crossfade.
+ * Three things are captured because none is sufficient alone. The types prove
+ * the tag on the link reached the transition. The pseudo-elements prove the
+ * browser built the tree the stylesheet expects — one `root` pair and nothing
+ * page-shaped beside it. The resolved keyframe offset is the only place
+ * `nav-forward` and `nav-back` are distinguishable, since both run the same
+ * keyframes with the sign flipped.
  *
  * Note that `KeyframeEffect.pseudoElement` reports the transition *name*, which
  * for an unnamed `<ViewTransition>` is a generated string like `_t_1_`. It is
@@ -22,9 +24,10 @@ import { expect, test, type Page } from "@playwright/test";
  */
 type RecordedTransition = {
   types: string[];
-  pageTransitionClass: string | null;
   animationNames: string[];
   pseudoElements: string[];
+  /** Where `::view-transition-old(root)` starts its slide, e.g. `-60px`. */
+  rootSlideFrom: string | null;
 };
 
 declare global {
@@ -41,9 +44,9 @@ async function recordViewTransitions(page: Page) {
     document.startViewTransition = ((update: unknown) => {
       const recorded: RecordedTransition = {
         types: [],
-        pageTransitionClass: null,
         animationNames: [],
         pseudoElements: [],
+        rootSlideFrom: null,
       };
       window.__viewTransitions.push(recorded);
 
@@ -55,21 +58,22 @@ async function recordViewTransitions(page: Page) {
       );
       transition.ready.then(
         () => {
-          // The single element `PageContainer` renders, and the only one the
-          // directional slide is attached to.
-          const container = document.querySelector("main > div");
-          if (container) {
-            recorded.pageTransitionClass =
-              getComputedStyle(container).viewTransitionClass ?? null;
-          }
           for (const animation of document.getAnimations()) {
-            const pseudoElement = (animation.effect as KeyframeEffect | null)
-              ?.pseudoElement;
+            const effect = animation.effect as KeyframeEffect | null;
+            const pseudoElement = effect?.pseudoElement;
             if (!pseudoElement?.startsWith("::view-transition")) continue;
+            const name = (animation as CSSAnimation).animationName;
             recorded.pseudoElements.push(pseudoElement);
-            recorded.animationNames.push(
-              (animation as CSSAnimation).animationName,
-            );
+            recorded.animationNames.push(name);
+            if (
+              pseudoElement === "::view-transition-old(root)" &&
+              name === "nav-slide"
+            ) {
+              const from = effect?.getKeyframes()[0] as
+                | { translate?: string }
+                | undefined;
+              recorded.rootSlideFrom = from?.translate ?? null;
+            }
           }
         },
         () => {
@@ -138,9 +142,15 @@ test("a link deeper into the catalog slides forward", async ({ page }) => {
   });
 
   expect(transition.types).toEqual(["nav-forward"]);
-  expect(transition.pageTransitionClass).toBe("nav-forward");
   expect(transition.animationNames).toContain("nav-slide");
   expect(transition.animationNames).toContain("nav-fade");
+  // Negative on the forward branch, positive on the back one.
+  expect(transition.rootSlideFrom).toContain("-60px");
+  // The whole page rides the root snapshot. A generated `_t_N_` here would mean
+  // it had been named out of root into a group of its own, which is the shape
+  // that made Safari build a second pair of snapshots and draw both pages at
+  // once.
+  expect(transition.pseudoElements.join(" ")).not.toMatch(/\(_t_/i);
   await expect(page).toHaveURL("/category/smartphones");
 });
 
@@ -157,8 +167,8 @@ test("a link back up the hierarchy slides the other way", async ({ page }) => {
   });
 
   expect(transition.types).toEqual(["nav-back"]);
-  expect(transition.pageTransitionClass).toBe("nav-back");
   expect(transition.animationNames).toContain("nav-slide");
+  expect(transition.rootSlideFrom).toBe("60px");
   await expect(page).toHaveURL("/category/smartphones");
 });
 
@@ -167,14 +177,15 @@ test("a link that leaves the catalog carries no direction", async ({
 }) => {
   await page.goto("/");
   // The user icon steps out of the hierarchy rather than through it, so it is
-  // deliberately untagged and falls through `NAV_DIRECTION`'s `default: none`.
+  // deliberately untagged. With no type on the transition, none of the
+  // `:active-view-transition-type()` rules match and the root stays put.
   const transition = await transitionFrom(page, async () => {
     await page.locator("header").getByTitle("Not logged in").click();
   });
 
   expect(transition.types).toEqual([]);
-  expect(transition.pageTransitionClass).toBe("none");
   expect(transition.animationNames).not.toContain("nav-slide");
+  expect(transition.rootSlideFrom).toBeNull();
   // `/account` redirects a logged-out visitor, and the redirect target is
   // wrapped in a `PageContainer` too, so it is still the untagged path.
   await expect(page).toHaveURL(/\/login/);
@@ -187,7 +198,11 @@ test("changing only the query crossfades the results in place", async ({
   await page.getByRole("heading", { name: /Search Results/ }).waitFor();
 
   const transition = await transitionFrom(page, async () => {
-    await page.getByPlaceholder("Search products...").fill("laptop");
+    const input = page.getByPlaceholder("Search products...");
+    await input.click();
+    // Typed rather than filled: the combobox opens off the keystrokes, and a
+    // programmatic value set leaves WebKit showing no suggestions at all.
+    await input.pressSequentially("laptop");
     await page.getByText('Search for "laptop"').click();
   });
 
@@ -216,5 +231,5 @@ test("the loading shell animates its handoff to the content", async ({
   expect(reveal?.animationNames).toContain("reveal-fade");
   // The reveal is a Suspense boundary resolving, not a navigation, so the page
   // must not slide underneath it.
-  expect(reveal?.pageTransitionClass).toBe("none");
+  expect(reveal?.animationNames).not.toContain("nav-slide");
 });
