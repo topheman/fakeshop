@@ -199,3 +199,90 @@
     transform: translateY(0);
   }
 }
+
+/*
+  A navigation that moved through the catalog's hierarchy. Horizontal direction
+  encodes it: forward pushes the old page left and brings the new one in from
+  the right, back does the reverse. The old page leaves quickly so it stops
+  competing for attention, and the new page's fade waits for it to finish while
+  the slide runs longer than both.
+
+  Only navigations tagged with `transitionTypes` reach these selectors. The
+  browser's back button, `router.refresh()` and every untagged link fall
+  through `default: "none"` and do not animate.
+*/
+:root {
+  --nav-exit: 150ms;
+  --nav-enter: 210ms;
+  --nav-move: 400ms;
+  --nav-offset: 60px;
+}
+
+::view-transition-old(.nav-forward) {
+  --nav-slide: calc(-1 * var(--nav-offset));
+  animation:
+    var(--nav-exit) ease-in both nav-fade reverse,
+    var(--nav-move) ease-in-out both nav-slide reverse;
+}
+
+::view-transition-new(.nav-forward) {
+  --nav-slide: var(--nav-offset);
+  animation:
+    var(--nav-enter) ease-out var(--nav-exit) both nav-fade,
+    var(--nav-move) ease-in-out both nav-slide;
+}
+
+::view-transition-old(.nav-back) {
+  --nav-slide: var(--nav-offset);
+  animation:
+    var(--nav-exit) ease-in both nav-fade reverse,
+    var(--nav-move) ease-in-out both nav-slide reverse;
+}
+
+::view-transition-new(.nav-back) {
+  --nav-slide: calc(-1 * var(--nav-offset));
+  animation:
+    var(--nav-enter) ease-out var(--nav-exit) both nav-fade,
+    var(--nav-move) ease-in-out both nav-slide;
+}
+
+@keyframes nav-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes nav-slide {
+  from {
+    translate: var(--nav-slide);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+/*
+  The header is the fixed reference point a directional slide is read against,
+  so it is named and pulled out of the animation entirely. Without this it stays
+  part of the root snapshot, which the page group paints over: measured at the
+  midpoint of a forward navigation, the outgoing category grid was drawn across
+  the header bar.
+
+  `display: none` on the old snapshot avoids two headers being briefly visible,
+  and the `z-index` keeps the one that remains above the sliding content.
+*/
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
+}

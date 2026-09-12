@@ -5,7 +5,10 @@ import { ViewTransition } from "react";
 import type { Product } from "@/lib/api";
 import { IMAGE_BLUR_PLACEHOLDER } from "@/utils/constants";
 import { generateProductSlug } from "@/utils/slugUtils";
-import { productImageTransitionName } from "@/utils/viewTransitions";
+import {
+  NAV_FORWARD,
+  productImageTransitionName,
+} from "@/utils/viewTransitions";
 
 import { AddToCartButton } from "./AddToCartButton";
 
@@ -16,6 +19,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
         <Link
           key={product.id}
           href={`/product/${generateProductSlug(product.title, product.id)}`}
+          transitionTypes={NAV_FORWARD}
           className="block rounded-lg border p-4 transition-shadow hover:shadow-lg"
         >
           <div className="w-full overflow-hidden rounded-lg bg-gray-200">

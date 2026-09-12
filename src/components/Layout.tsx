@@ -1,4 +1,7 @@
+import { ViewTransition } from "react";
+
 import { cn } from "@/lib/utils";
+import { NAV_DIRECTION } from "@/utils/viewTransitions";
 
 import { Cart } from "./Cart";
 import Footer from "./Footer";
@@ -23,6 +26,13 @@ export function Layout({
   );
 }
 
+/**
+ * Every page renders this, and nothing else does, which is what makes it the
+ * right place for the directional slide. A layout persists across a navigation
+ * so its `enter` and `exit` never fire; a component the page itself mounts is
+ * unmounted and remounted on every route change, which is exactly the pair the
+ * transition needs.
+ */
 export function PageContainer({
   children,
   className,
@@ -31,8 +41,10 @@ export function PageContainer({
   className?: string;
 }) {
   return (
-    <div className={cn("container mx-auto px-4 py-8", className)}>
-      {children}
-    </div>
+    <ViewTransition enter={NAV_DIRECTION} exit={NAV_DIRECTION} default="none">
+      <div className={cn("container mx-auto px-4 py-8", className)}>
+        {children}
+      </div>
+    </ViewTransition>
   );
 }
