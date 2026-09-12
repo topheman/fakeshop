@@ -21,27 +21,35 @@ Both call `addTransitionType` inside the Transition that the navigation already 
 
 ### How a type reaches an animation
 
-A `<ViewTransition>` trigger normally takes a string, the view transition class to tag the pseudo-elements with. It also accepts an **object keyed by type**, which is where the two halves meet:
+There are two routes from a type to an animation, and this phase ended up using the second one after the first broke in Safari.
 
-```ts
-export const NAV_DIRECTION = {
-  "nav-forward": "nav-forward",
-  "nav-back": "nav-back",
-  default: "none",
-};
+The React route is a `<ViewTransition>` trigger, which normally takes a string — the view transition class to tag the pseudo-elements with — but also accepts an **object keyed by type**, `ViewTransitionClassPerType`, a `Record<"default" | string, "none" | "auto" | string>`. React reads the types active on the transition, finds the first key that matches, and applies that class. `default` is the fallback for a transition carrying no type, or carrying one the object does not name. The phase still uses this for the things that are _not_ the page slide.
+
+The CSS route is `:active-view-transition-type()`, a pseudo-class on the root element that matches while a transition carrying that type is running. It needs no React involvement at all, so it can target pseudo-elements React never named — including `root`, which is the one this phase settled on:
+
+```css
+html:active-view-transition-type(nav-forward)::view-transition-old(root) {
+  --nav-slide: calc(-1 * var(--nav-offset));
+}
 ```
 
-React reads the types active on the transition, finds the first key that matches, and applies that class. `default` is the fallback for a transition carrying no type — or carrying one this object does not name. Its type is `ViewTransitionClassPerType`, a `Record<"default" | string, "none" | "auto" | string>`.
+Both routes invert what the props look like they do. The trigger decides **whether** a boundary animates; the type decides **which** animation it gets. Opting in is per link, which is the right default: a direction is a claim about the app's hierarchy, and only the link knows whether it is going up or down it.
 
-This is worth stating plainly because it inverts what the props look like they do. `enter` and `exit` decide **whether** a boundary animates; the type decides **which** animation it gets. A single `enter={NAV_DIRECTION}` covers both directions, and a navigation the app has not tagged gets `none` and does not animate at all. Opting in is per link, which is the right default: a direction is a claim about the app's hierarchy, and only the link knows whether it is going up or down it.
+### Why the page boundary is `default="none"`
 
-### Why the same object is passed to both `enter` and `exit`
+`PageContainer` still wraps its children in a `<ViewTransition>`, and the prop it carries is doing something easy to miss:
 
-One navigation is two boundaries in one commit: the old page's `PageContainer` unmounts and the new page's mounts. React fires `exit` on the first and `enter` on the second, in the same transition, under the same types. So both need the class, and both get the same map. The direction is carried by the CSS, not by the trigger — `::view-transition-old(.nav-forward)` slides left, `::view-transition-new(.nav-forward)` comes in from the right, and `.nav-back` swaps the signs.
+```tsx
+<ViewTransition default="none">
+```
+
+Two facts collide here. First, **React only calls `document.startViewTransition` when a `<ViewTransition>` is part of the update.** Remove the boundary entirely and a tagged link changes the page with no transition at all — measured, not assumed: `home → /category/beauty` and `/category/beauty → /product/…` both stopped animating, and the only transition still recorded was the Suspense reveal that follows. Second, **any boundary that activates gets a `view-transition-name`, which cuts that element out of the root snapshot.** A named page is a hole in the middle of a sliding root.
+
+`default="none"` is the one setting that satisfies both. It is enough of a `<ViewTransition>` for React to start the transition, and `"none"` means no class resolves, so React never names the element and the page stays inside the root snapshot where the CSS can slide it.
 
 ### Where the boundary has to live
 
-Phase 8 established that `enter` and `exit` are dead in a `layout.tsx`, because a layout persists across navigations and is therefore never mounted or unmounted. A directional slide needs a component that the **page** mounts. FakeShop already has exactly one: `PageContainer`, rendered by all seven pages — `/`, `/account`, `/login`, `/search`, `/checkout`, `/category/[slug]` and `/product/[slug]` — and by nothing else. That makes it a single edit rather than seven, and it means a page added later gets the slide by rendering the container everyone else renders.
+Phase 8 established that `enter` and `exit` are dead in a `layout.tsx`, because a layout persists across navigations and is therefore never mounted or unmounted. The boundary that starts the transition needs a component the **page** mounts. FakeShop already has exactly one: `PageContainer`, rendered by all seven pages — `/`, `/account`, `/login`, `/search`, `/checkout`, `/category/[slug]` and `/product/[slug]` — and by nothing else. That makes it a single edit rather than seven, and it means a page added later gets the slide by rendering the container everyone else renders.
 
 ### The same-route crossfade needs a key
 
@@ -71,26 +79,45 @@ if (pathname === "/search") {
 }
 ```
 
-Everything not in that list stays untagged on purpose. The browser's own back button, `router.refresh()`, the cart and checkout all fall through `default: "none"`.
+Everything not in that list stays untagged on purpose. The browser's own back button, `router.refresh()`, the cart and checkout carry no type, so no `:active-view-transition-type()` rule matches and the root keeps the `animation: none` it is given by default.
 
 ### The CSS
 
 The timings mirror the reveal from phase 8, for the same reason: the outgoing page leaves quickly so it stops competing for attention, the incoming fade waits for it to finish, and the slide runs longer than both so the movement reads as continuous rather than as two events.
 
 ```css
-::view-transition-new(.nav-forward) {
-  --nav-slide: var(--nav-offset);
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+html:active-view-transition-type(nav-forward)::view-transition-new(root),
+html:active-view-transition-type(nav-back)::view-transition-new(root) {
   animation:
     var(--nav-enter) ease-out var(--nav-exit) both nav-fade,
     var(--nav-move) ease-in-out both nav-slide;
 }
 ```
 
+The pair of animations is shared by both directions and only the sign of `--nav-slide` differs, so the rules are split: one pair of selectors carries the timing, four one-line rules carry the offset. `animation: none` on the bare `root` selectors is what keeps an untagged navigation still — without it the browser's own crossfade would run on every page change, which is not what the app asks for.
+
 The offset is 60px. A full-width slide would be wrong here — these are not screens in a stack, they are pages in a document, and a small displacement is enough to say which way the hierarchy moved.
+
+### Everything else has to stand down
+
+Sliding the root has a consequence that is easy to miss until something looks wrong: **any other `<ViewTransition>` that activates during the navigation is named out of the root snapshot**, so it stops sliding with the page and leaves a hole where it used to be. The Suspense reveal and the search crossfade are both capable of activating mid-navigation, so both are gated on the type:
+
+```ts
+export function exceptNavigation(className: string) {
+  return { "nav-forward": "none", "nav-back": "none", default: className };
+}
+```
+
+A Suspense boundary resolving after the navigation still gets `slide-up`, because that transition carries no type and falls through to `default`. One resolving _during_ a navigation gets `none` and rides the root with everything else.
 
 ### Anchoring the header
 
-This was not planned. It came out of the first frozen frame of a forward navigation: the outgoing category grid was being **painted across the header bar**. The header is not in its own group, so it is part of the root snapshot, and the page group is drawn over the root. Nothing was wrong with the slide; the header simply had nothing keeping it above the thing sliding past it.
+This was not planned. It came out of the first frozen frame of a forward navigation: the outgoing category grid was being **painted across the header bar**. Once the slide moved onto the root snapshot the reason changed but the fix did not — the header is part of the page, so it would slide with it, and a chrome bar that moves turns "a page arrived" into "the whole window lurched".
 
 ```css
 ::view-transition-group(site-header) {
@@ -105,7 +132,7 @@ This was not planned. It came out of the first frozen frame of a forward navigat
 }
 ```
 
-Naming it lifts it into its own group, `z-index` puts that group above the page, and `animation: none` holds it still — it is the fixed reference point the slide is read against, so it must not move. `display: none` on the old snapshot avoids two headers being briefly visible while both are in the tree.
+Naming it lifts it out of the root snapshot into a group of its own, `z-index` puts that group above the sliding page, and `animation: none` holds it still — it is the fixed reference point the slide is read against, so it must not move. `display: none` on the old snapshot avoids two headers being briefly visible while both are in the tree.
 
 ## Measuring it
 
@@ -115,20 +142,20 @@ A view transition is unusually hard to assert on. It runs on pseudo-elements in 
 document.startViewTransition = (update) => {
   const recorded = {
     types: [],
-    pageTransitionClass: null,
     animationNames: [],
     pseudoElements: [],
+    rootSlideFrom: null,
   };
   recorded.types = Array.from(update?.types ?? []);
   const transition = start(update);
   transition.ready.then(() => {
-    /* read classes and animations */
+    /* read pseudo-elements, animation names and resolved keyframes */
   });
   return transition;
 };
 ```
 
-`ready` is the single moment where all three layers are observable at once: the types that were passed in, the class React resolved from them, and the animations the stylesheet matched. Two of those are recorded because neither is sufficient. The class on the page container proves the type reached the right branch of `NAV_DIRECTION` — it is the only place `nav-forward` and `nav-back` differ, since both run the same keyframes with an opposite offset. The animation names prove the stylesheet matched that class rather than the browser falling back to its own crossfade.
+`ready` is the single moment where every layer is observable at once: the types that were passed in, the pseudo-element tree the browser built, and the animations the stylesheet matched. Three things are recorded because none is sufficient alone. The **types** prove the tag on the link reached the transition. The **pseudo-elements** prove the browser built the tree the stylesheet expects — one `root` pair, and no generated `_t_N_` name beside it. The **resolved first keyframe** of `nav-slide` is read straight off `effect.getKeyframes()` and is the only place `nav-forward` and `nav-back` are distinguishable, since both run the same keyframes with the sign flipped: `-60px` forward, `60px` back.
 
 Two things cost time here and are worth writing down.
 
@@ -136,7 +163,7 @@ Two things cost time here and are worth writing down.
 
 **Page loads run transitions of their own.** Every Suspense boundary that resolves is one, and they land after the content they revealed is already on screen. An assertion that grabs "the next transition" intermittently gets one of those instead of the navigation. A `settle()` helper polls until the recorded count stops growing before the action runs.
 
-### Screenshots have to be frozen
+### Screenshots have to be frozen, and then they still do not help
 
 Headless screenshots taken after a transition were all identical, because the overlay tree is gone by then. Freezing every `::view-transition*` animation at its midpoint inside `ready` makes the mid-transition frame deterministic:
 
@@ -149,11 +176,55 @@ for (const a of document.getAnimations()) {
 
 This deadlocks if it catches the initial load's reveal — the frozen overlay leaves `<html>` intercepting pointer events forever, and the next `.click()` times out — so the freeze is behind a flag set immediately before the click.
 
-It also produced one wrong diagnosis worth recording. The outgoing page looked vertically offset, and the hypothesis was that the group's size morph was squashing it, so a rule was added to stop that. Re-measuring produced a **byte-identical** frame: the offset was Playwright having scrolled the home page down to reach the link. The rule was reverted, and the measurement redone at a viewport tall enough that no scroll was needed.
+It also produced two wrong diagnoses worth recording.
+
+The first: the outgoing page looked vertically offset, and the hypothesis was that the group's size morph was squashing it, so a rule was added to stop that. Re-measuring produced a **byte-identical** frame — the offset was Playwright having scrolled the home page down to reach the link. The rule was reverted, and the measurement redone at a viewport tall enough that no scroll was needed.
+
+The second is worse, because the instrument itself was lying. Setting `currentTime = endTime * 0.5` on every animation independently puts the 150ms exit fade at 75ms and the 210ms enter fade at 180ms **at the same instant**, which manufactures an overlap the sequenced animation never has. Both engines' frozen frames looked broken, and neither was evidence of anything.
+
+Then the fallback instruments turned out to be no better. Playwright's `page.screenshot` is slower than a 400ms transition and always lands on the settled page, and `recordVideo` at 25fps shows a **single-frame swap with no animation in it at all** — in Chromium as well as WebKit. Playwright's capture does not include the view transition layer. That is worth stating flatly, because a clean-looking recording was used earlier in this phase as evidence that Safari was fine, and it was never evidence of anything. **The only instrument that works here is structural**: `document.getAnimations()` at `ready`, and the resolved keyframes hanging off it.
 
 ### The phase-8 open question, answered
 
-The Suspense reveal **does** animate on a cold product load. The same probe that diagnosed the class mismatch showed a second, untagged transition with two exit/enter pairs — the skeleton handing off to the content. It is now a test: a cold `/product/iphone-9-1` runs a transition with the `reveal-slide` and `reveal-fade` keyframes, and its page container class is `none`, because a Suspense boundary resolving is not a navigation and the page must not slide underneath it.
+The Suspense reveal **does** animate on a cold product load. The same probe that diagnosed the class mismatch showed a second, untagged transition with two exit/enter pairs — the skeleton handing off to the content. It is now a test: a cold `/product/iphone-9-1` runs a transition with the `reveal-slide` and `reveal-fade` keyframes and no `nav-slide` anywhere in it, because a Suspense boundary resolving is not a navigation and the page must not slide underneath it.
+
+## The Safari regression, and why the first design could not survive it
+
+The phase was written, tested, documented and merged into a PR before anyone opened it in Safari. It was broken there: the outgoing page and the incoming page were drawn **on top of each other at full opacity** for the whole navigation, text colliding, both product grids visible at once.
+
+### What the first design did
+
+`PageContainer` was wrapped in `<ViewTransition enter={NAV_DIRECTION} exit={NAV_DIRECTION} default="none">`. That is the textbook use of the two triggers, and it activates the boundary, so React assigns it a `view-transition-name` — a generated one, because the boundary is unnamed. A navigation unmounts one page and mounts another, so React generates **two** names: `_t_0_` for the outgoing container, `_t_1_` for the incoming one. Both carry the `nav-forward` class, and the CSS animated `::view-transition-old(.nav-forward)` and `::view-transition-new(.nav-forward)`.
+
+That relies on an assumption nobody states out loud: that a name which exists only in the old DOM produces only an old snapshot, and a name which exists only in the new DOM produces only a new one.
+
+### What Safari actually does
+
+Reading `document.getAnimations()` at `ready` in real Safari, for a single `home → /category/beauty` navigation:
+
+| pseudo-element | Safari                                | Chrome |
+| -------------- | ------------------------------------- | ------ |
+| `old(_t_0_)`   | `nav-fade` 0/150, `nav-slide` 0/400   | same   |
+| `new(_t_0_)`   | `nav-fade` 150/210, `nav-slide` 0/400 | absent |
+| `old(_t_1_)`   | `nav-fade` 0/150, `nav-slide` 0/400   | absent |
+| `new(_t_1_)`   | `nav-fade` 150/210, `nav-slide` 0/400 | same   |
+
+Same types in both, same classes, same delays and durations — and **four** snapshots in Safari where Chrome has two. Safari builds both halves of the pair for both names. So `new(_t_0_)` fades the _outgoing_ page back in over the top of everything, and `old(_t_1_)` fades the _incoming_ page out from underneath it. Two full-page snapshots animating in each direction is exactly the double exposure on screen.
+
+Nothing in the CSS was wrong. The design was wrong: it assumed a snapshot count the spec does not guarantee.
+
+### The fix
+
+**`root` is the one name with exactly one old and one new snapshot by construction, in every engine.** It is not a name React assigns or a name the app invents — it is the browser's own snapshot of everything that has no other name. There is no second pair for an engine to produce.
+
+So the slide moved onto `root`, the boundary in `PageContainer` dropped to `default="none"` so that the page would stay _inside_ that snapshot, and the direction now reaches the CSS through `:active-view-transition-type()` instead of through a view transition class. The `NAV_FORWARD` and `NAV_BACK` arrays on the links are unchanged; only what consumes them moved.
+
+### What should have caught it
+
+A `webkit` project in the Playwright config, which the suite now has. Two caveats came out of adding it, and both are recorded in the config rather than left as folklore:
+
+- **The suite could not reproduce the original bug.** Playwright's WebKit showed the same four-snapshot structure real Safari does, but the frozen frames and the video never rendered it, for the capture reason above. What the suite _can_ do is assert the structure: the forward and back tests now fail if a generated `_t_N_` name shows up in a navigation at all, which is the shape the bug needed.
+- **`instant()` does not work in WebKit.** The navigation lock never engages, the dynamic data streams in as usual, and every skeleton assertion in `instant-navigation.test.ts` quietly describes a fully rendered page instead of a shell. Four tests failed outright and one passed for the wrong reason, so that file is scoped to Chromium. A test that passes for the wrong reason is worse than one that does not run.
 
 ## The unit test that broke, and why the obvious fix was wrong
 
@@ -192,30 +263,35 @@ This is the expected result and the reason to check: transition types are a clie
 Everything is green:
 
 - **23 unit tests**, including the four that this phase broke and repaired.
-- **13 e2e tests** — 6 `instant()` assertions from phase 7, 2 opengraph from phase 9, and 5 new view transition assertions. Stable at `--repeat-each=2`.
+- **26 e2e runs across two engines** — 13 in Chromium, and 13 in WebKit of which 6 are the Chromium-only `instant()` specs and therefore skipped, leaving 20 that actually execute. Stable at `--repeat-each=3`.
 - `npm run lint` and `npm run typecheck` clean.
 
-The five new assertions are: a forward link carries `nav-forward` and runs the slide, a back link carries `nav-back`, a link out of the catalog carries no type and resolves to `none`, a query-only change crossfades `search-results` with no slide, and the Suspense reveal runs its own keyframes.
+The five new assertions are: a forward link carries `nav-forward`, runs the slide, resolves the keyframe to `-60px` and builds no generated `_t_N_` name; a back link carries `nav-back` and resolves it to `60px`; a link out of the catalog carries no type and no slide; a query-only change crossfades `search-results` with no slide; and the Suspense reveal runs its own keyframes with no slide underneath.
 
 One of those is a small trap worth noting: the "leaves the catalog" test clicks the account icon and lands on `/login`, because `/account` redirects a logged-out visitor. The redirect target renders a `PageContainer` too, so it is still the untagged path being asserted.
 
 ## Key files
 
-- [`src/utils/viewTransitions.ts`](../src/utils/viewTransitions.ts) — the two type arrays and the map from types to classes
-- [`src/components/Layout.tsx`](../src/components/Layout.tsx) — `PageContainer`, the one boundary every page mounts
+- [`src/utils/viewTransitions.ts`](../src/utils/viewTransitions.ts) — the two type arrays and `exceptNavigation()`
+- [`src/components/Layout.tsx`](../src/components/Layout.tsx) — `PageContainer`, the `default="none"` boundary every page mounts
 - [`src/app/(shop)/search/page.tsx`](<../src/app/(shop)/search/page.tsx>) — the keyed crossfade
-- [`src/app/globals.css`](../src/app/globals.css) — the directional keyframes and the header anchoring
+- [`src/components/Reveal.tsx`](../src/components/Reveal.tsx) — the Suspense handoff, standing down during a navigation
+- [`src/app/globals.css`](../src/app/globals.css) — the root slide, the type gating and the header anchoring
 - [`e2e/view-transitions.test.ts`](../e2e/view-transitions.test.ts) — the `startViewTransition` recorder and the five assertions
+- [`playwright.config.ts`](../playwright.config.ts) — the `webkit` project
 - [`vitest.setup.ts`](../vitest.setup.ts) — the `<ViewTransition>` passthrough for the stable React
 
 ## Learning outcomes
 
 - **Transition types are the channel for information the React tree does not contain.** Direction is the canonical example: forward and back produce identical commits, so no trigger, name or class can distinguish them. The type is attached to the transition rather than to an element.
-- The trigger decides **whether** a boundary animates; the type decides **which** animation. `enter={NAV_DIRECTION}` is one prop covering both directions and an untagged fallback.
-- **Opting in per link is the correct default.** A direction is a claim about the app's hierarchy, and only the link knows if it is going up or down. Everything untagged falls through `default: "none"` and animates not at all, which is why the browser back button and the cart stay still.
+- The trigger decides **whether** a boundary animates; the type decides **which** animation. A type reaches the CSS either through a `ViewTransitionClassPerType` map on the trigger or, with no React involvement at all, through `:active-view-transition-type()`.
+- **Animate `root` for anything that is the whole page.** It is the only name guaranteed to have exactly one old and one new snapshot. A React `<ViewTransition>` around a page generates a different name per side, and Safari builds both halves of the pair for both of them — four full-page snapshots where the CSS assumed two, which draws both pages at once.
+- **`default="none"` is not the same as no boundary.** React only starts a view transition when a `<ViewTransition>` is part of the update, and `"none"` starts one without naming the element. That distinction is the whole reason a root-based slide can work in a React app.
+- **Naming an element removes it from the root snapshot.** That is the mechanism behind both the header anchoring and `exceptNavigation()`: useful when it is deliberate, a hole in the page when it is not.
+- **Opting in per link is the correct default.** A direction is a claim about the app's hierarchy, and only the link knows if it is going up or down. Everything untagged matches no type rule and animates not at all, which is why the browser back button and the cart stay still.
 - **A same-route transition needs a `key`.** Without a remount there is no old/new pair, and React updates in place with nothing to animate.
-- **Anything not in its own group is part of the root snapshot, and the page group paints over it.** A persistent chrome element that should stay put during a page animation has to be named, given a `z-index` and told not to animate — it is not automatic.
-- **Freeze the animation to see it.** A screenshot after the transition shows nothing, because the overlay tree is already gone. Pausing every view transition animation at its midpoint inside `ready` is what makes the frame both visible and deterministic — and it caught a real paint-order defect that had gone unnoticed by eye.
-- **Measure again before believing a diagnosis.** The "squashed page" was Playwright's scroll position, and the fix for it changed nothing: the re-measured frame was byte-identical.
-- `KeyframeEffect.pseudoElement` reports the transition **name**, not the class. For an unnamed boundary that is a generated string like `_t_0_`, so it cannot be asserted against. Assert on the computed `viewTransitionClass` and the animation names instead.
+- **Playwright cannot see a view transition.** Screenshots land after it and video does not capture the layer, in either engine. Structural introspection at `ready` — `getAnimations()`, `pseudoElement`, `getKeyframes()` — is the only instrument that reports what actually ran.
+- **Measure again before believing a diagnosis, and check the instrument first.** The "squashed page" was Playwright's scroll position. The "overlapping fades" in the frozen frames were the freeze itself, which puts two animations of different lengths at different points of their own timelines at the same instant. Neither was a defect in the app.
+- `KeyframeEffect.pseudoElement` reports the transition **name**, not the class. For an unnamed boundary that is a generated string like `_t_0_`, so it cannot be asserted against — but its _presence_ is worth asserting against, since a page that has been named out of the root snapshot is exactly the regression this phase fixed.
+- **A cross-engine test project is not optional for CSS this new.** Everything shipped green in Chromium and was visibly broken in Safari. Engine support for recent CSS lands at very different times and the failure mode is silent.
 - **This repo runs two Reacts, and now it is visible.** The App Router uses the canary Next bundles; the unit tests use the stable one at the project root. They can diverge on canary APIs, and they cannot be forced together from the bundler, because Testing Library resolves `react-dom` through Node where aliases do not reach.
