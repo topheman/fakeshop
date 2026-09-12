@@ -203,60 +203,76 @@
 /*
   A navigation that moved through the catalog's hierarchy. Horizontal direction
   encodes it: forward pushes the old page left and brings the new one in from
-  the right, back does the reverse. The old page leaves quickly so it stops
-  competing for attention, and the new page's fade waits for it to finish while
-  the slide runs longer than both.
+  the right, back does the reverse. The slide outlasts both fades, so the page
+  is still settling into place once it is fully opaque.
 
-  This animates the root snapshot rather than a named page element, because the
-  root is the one name the browser guarantees has exactly one old and one new
-  snapshot. A React `<ViewTransition>` around the page generates a separate name
-  per side, and Safari captures both an old and a new snapshot for each of them,
-  so the outgoing page is drawn on top of the incoming one for the whole
-  transition.
+  Both fades run over the same window with complementary linear opacities, and
+  `plus-lighter` makes the two snapshots add rather than composite. Together
+  those keep the painted result fully opaque from start to finish. Sequential
+  fades leave a frame where neither page is drawn and the content area flashes
+  empty; overlapping ones without the blend mode wash out towards the middle,
+  because two half-transparent layers cover less than one opaque one. The
+  browser's own crossfade does exactly this, and overriding `animation` is what
+  drops it.
 
-  Only navigations tagged with `transitionTypes` reach these selectors. The
-  browser's back button, `router.refresh()` and every untagged link get the
-  `animation: none` below and do not move.
+  `page` is the name the `<ViewTransition>` in `Layout.tsx` puts on the page
+  container. It has to be a single stable name on both sides of the navigation:
+  a boundary that names its outgoing and incoming halves separately produces two
+  independent snapshot pairs, and Safari fills in all four of them, drawing the
+  old page over the new one for the whole transition.
+
+  The group is pinned because the two pages rarely have the same height, and
+  animating the box would drag the content's bottom edge around underneath the
+  slide.
+
+  Only navigations tagged with `transitionTypes` reach the directional rules.
+  The browser's back button, `router.refresh()` and every untagged link get the
+  `animation: none` below and swap in place.
 */
 :root {
-  --nav-exit: 150ms;
-  --nav-enter: 210ms;
+  --nav-fade: 260ms;
   --nav-move: 400ms;
   --nav-offset: 60px;
 }
 
-::view-transition-old(root),
-::view-transition-new(root) {
+::view-transition-group(page) {
   animation: none;
 }
 
-html:active-view-transition-type(nav-forward)::view-transition-old(root),
-html:active-view-transition-type(nav-back)::view-transition-old(root) {
+::view-transition-old(page),
+::view-transition-new(page) {
+  animation: none;
+}
+
+html:active-view-transition-type(nav-forward)::view-transition-old(page),
+html:active-view-transition-type(nav-back)::view-transition-old(page) {
   animation:
-    var(--nav-exit) ease-in both nav-fade reverse,
+    var(--nav-fade) linear both nav-fade reverse,
     var(--nav-move) ease-in-out both nav-slide reverse;
+  mix-blend-mode: plus-lighter;
 }
 
-html:active-view-transition-type(nav-forward)::view-transition-new(root),
-html:active-view-transition-type(nav-back)::view-transition-new(root) {
+html:active-view-transition-type(nav-forward)::view-transition-new(page),
+html:active-view-transition-type(nav-back)::view-transition-new(page) {
   animation:
-    var(--nav-enter) ease-out var(--nav-exit) both nav-fade,
+    var(--nav-fade) linear both nav-fade,
     var(--nav-move) ease-in-out both nav-slide;
+  mix-blend-mode: plus-lighter;
 }
 
-html:active-view-transition-type(nav-forward)::view-transition-old(root) {
+html:active-view-transition-type(nav-forward)::view-transition-old(page) {
   --nav-slide: calc(-1 * var(--nav-offset));
 }
 
-html:active-view-transition-type(nav-forward)::view-transition-new(root) {
+html:active-view-transition-type(nav-forward)::view-transition-new(page) {
   --nav-slide: var(--nav-offset);
 }
 
-html:active-view-transition-type(nav-back)::view-transition-old(root) {
+html:active-view-transition-type(nav-back)::view-transition-old(page) {
   --nav-slide: var(--nav-offset);
 }
 
-html:active-view-transition-type(nav-back)::view-transition-new(root) {
+html:active-view-transition-type(nav-back)::view-transition-new(page) {
   --nav-slide: calc(-1 * var(--nav-offset));
 }
 
@@ -279,10 +295,9 @@ html:active-view-transition-type(nav-back)::view-transition-new(root) {
 }
 
 /*
-  The header is the fixed reference point a directional slide is read against,
-  so it is named and pulled out of the root snapshot entirely. Without this it
-  slides with the rest of the page and the whole viewport moves, which reads as
-  a jolt rather than as a page arriving.
+  The header is the fixed reference point a directional slide is read against.
+  It carries its own `view-transition-name`, so it is captured separately from
+  the page and can be held still while the page moves under it.
 
   `display: none` on the old snapshot avoids two headers being briefly visible,
   and the `z-index` keeps the one that remains above the sliding content.

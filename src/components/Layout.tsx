@@ -28,14 +28,15 @@ export function Layout({
 /**
  * The box every page renders its content into, and the reason a navigation
  * animates at all: React only calls `document.startViewTransition` when a
- * `<ViewTransition>` is part of the update, so without one here a tagged link
- * would change the page with no transition for the CSS to hook into.
+ * `<ViewTransition>` is part of the update.
  *
- * `default="none"` is doing real work. It starts the transition without giving
- * this element a `view-transition-name`, which keeps the page inside the root
- * snapshot — and the root is what the directional slide in `globals.css`
- * animates. Naming it instead would cut the page out of that snapshot and leave
- * a hole where the sliding content should be.
+ * The name has to be here rather than on the document root. React cancels the
+ * root snapshot outright — it sets `view-transition-name: none` on `<html>` and
+ * pins `::view-transition-group(root)` to `opacity: 0` — whenever no boundary
+ * activates, so CSS written against `root` never paints. A boundary React keeps
+ * is the only surface available, and a stable name is what guarantees the
+ * outgoing and incoming pages form a single old/new pair instead of two
+ * independent ones.
  */
 export function PageContainer({
   children,
@@ -45,7 +46,7 @@ export function PageContainer({
   className?: string;
 }) {
   return (
-    <ViewTransition default="none">
+    <ViewTransition name="page">
       <div className={cn("container mx-auto px-4 py-8", className)}>
         {children}
       </div>

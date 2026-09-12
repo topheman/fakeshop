@@ -13,10 +13,10 @@ import { expect, test, type Page } from "@playwright/test";
  *
  * Three things are captured because none is sufficient alone. The types prove
  * the tag on the link reached the transition. The pseudo-elements prove the
- * browser built the tree the stylesheet expects — one `root` pair and nothing
- * page-shaped beside it. The resolved keyframe offset is the only place
- * `nav-forward` and `nav-back` are distinguishable, since both run the same
- * keyframes with the sign flipped.
+ * browser built the tree the stylesheet expects — exactly one `page` pair, the
+ * shape Safari and Chrome have to agree on. The resolved keyframe offset is the
+ * only place `nav-forward` and `nav-back` are distinguishable, since both run
+ * the same keyframes with the sign flipped.
  *
  * Note that `KeyframeEffect.pseudoElement` reports the transition *name*, which
  * for an unnamed `<ViewTransition>` is a generated string like `_t_1_`. It is
@@ -26,8 +26,8 @@ type RecordedTransition = {
   types: string[];
   animationNames: string[];
   pseudoElements: string[];
-  /** Where `::view-transition-old(root)` starts its slide, e.g. `-60px`. */
-  rootSlideFrom: string | null;
+  /** Where `::view-transition-old(page)` starts its slide, e.g. `-60px`. */
+  pageSlideFrom: string | null;
 };
 
 declare global {
@@ -46,7 +46,7 @@ async function recordViewTransitions(page: Page) {
         types: [],
         animationNames: [],
         pseudoElements: [],
-        rootSlideFrom: null,
+        pageSlideFrom: null,
       };
       window.__viewTransitions.push(recorded);
 
@@ -66,13 +66,13 @@ async function recordViewTransitions(page: Page) {
             recorded.pseudoElements.push(pseudoElement);
             recorded.animationNames.push(name);
             if (
-              pseudoElement === "::view-transition-old(root)" &&
+              pseudoElement === "::view-transition-old(page)" &&
               name === "nav-slide"
             ) {
               const from = effect?.getKeyframes()[0] as
                 | { translate?: string }
                 | undefined;
-              recorded.rootSlideFrom = from?.translate ?? null;
+              recorded.pageSlideFrom = from?.translate ?? null;
             }
           }
         },
@@ -145,11 +145,18 @@ test("a link deeper into the catalog slides forward", async ({ page }) => {
   expect(transition.animationNames).toContain("nav-slide");
   expect(transition.animationNames).toContain("nav-fade");
   // Negative on the forward branch, positive on the back one.
-  expect(transition.rootSlideFrom).toContain("-60px");
-  // The whole page rides the root snapshot. A generated `_t_N_` here would mean
-  // it had been named out of root into a group of its own, which is the shape
-  // that made Safari build a second pair of snapshots and draw both pages at
-  // once.
+  expect(transition.pageSlideFrom).toContain("-60px");
+  // The regression guard. One old and one new, both under the same name: a
+  // boundary that names its two halves separately makes Safari build a second
+  // pair of snapshots and draw both pages at once.
+  // Deduplicated, because each snapshot carries both keyframe animations.
+  const pageSnapshots = [
+    ...new Set(transition.pseudoElements.filter((p) => p.endsWith("(page)"))),
+  ].sort();
+  expect(pageSnapshots).toEqual([
+    "::view-transition-new(page)",
+    "::view-transition-old(page)",
+  ]);
   expect(transition.pseudoElements.join(" ")).not.toMatch(/\(_t_/i);
   await expect(page).toHaveURL("/category/smartphones");
 });
@@ -168,7 +175,7 @@ test("a link back up the hierarchy slides the other way", async ({ page }) => {
 
   expect(transition.types).toEqual(["nav-back"]);
   expect(transition.animationNames).toContain("nav-slide");
-  expect(transition.rootSlideFrom).toBe("60px");
+  expect(transition.pageSlideFrom).toBe("60px");
   await expect(page).toHaveURL("/category/smartphones");
 });
 
@@ -178,14 +185,14 @@ test("a link that leaves the catalog carries no direction", async ({
   await page.goto("/");
   // The user icon steps out of the hierarchy rather than through it, so it is
   // deliberately untagged. With no type on the transition, none of the
-  // `:active-view-transition-type()` rules match and the root stays put.
+  // `:active-view-transition-type()` rules match and the page swaps in place.
   const transition = await transitionFrom(page, async () => {
     await page.locator("header").getByTitle("Not logged in").click();
   });
 
   expect(transition.types).toEqual([]);
   expect(transition.animationNames).not.toContain("nav-slide");
-  expect(transition.rootSlideFrom).toBeNull();
+  expect(transition.pageSlideFrom).toBeNull();
   // `/account` redirects a logged-out visitor, and the redirect target is
   // wrapped in a `PageContainer` too, so it is still the untagged path.
   await expect(page).toHaveURL(/\/login/);

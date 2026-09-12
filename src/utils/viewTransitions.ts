@@ -26,11 +26,11 @@ export const NAV_BACK = ["nav-back"];
 
 /**
  * A view transition class that applies to everything except a directional
- * navigation. The directional slide animates the root snapshot, and any element
- * a `<ViewTransition>` activates is named out of that snapshot, so an animation
- * about something else — a Suspense handoff, a search query changing in place —
- * has to stand down during a navigation or it punches a hole in the page as it
- * slides.
+ * navigation. The directional slide animates the page container's snapshot, and
+ * any element a nested `<ViewTransition>` activates is named out of it, so an
+ * animation about something else — a Suspense handoff, a search query changing
+ * in place — has to stand down during a navigation or it punches a hole in the
+ * page as it slides.
  */
 export function exceptNavigation(className: string) {
   return { "nav-forward": "none", "nav-back": "none", default: className };
