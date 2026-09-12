@@ -113,11 +113,11 @@ This adds a dependency. Confirm before installing.
 
 View Transitions with `<Link transitionTypes>`, and the reworked scroll and focus handling behind `appNewScrollHandler`. Category to product is the obvious transition to animate.
 
-### Phase 9: Root params and the OG image
+### Phase 9: The OG image
 
-`getLanguage()` reads `accept-language` from headers today. Introduce a `[lang]` root param and read it with `next/root-params` from any Server Component, no prop drilling. Then fix the `/api/og` prerender warning and take the free `ImageResponse` speedup from 16.2.
+Fix the `/api/og` prerender warning that has printed on every build since phase 1, take the free `ImageResponse` speedup from 16.2, and account for the 20.6 MB gz of server bundle phase 2's analyzer attributed to that single route.
 
-This phase is a genuine feature addition rather than an upgrade, so it is the first candidate to cut if the workshop is running long.
+This phase originally opened with a `[lang]` root param read through `next/root-params`, replacing `getLanguage()`'s `accept-language` header read. That half is dropped — see the decision in [`MEMORY.md`](../MEMORY.md).
 
 ## Deliberately out of scope
 

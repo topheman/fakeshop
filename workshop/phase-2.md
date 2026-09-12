@@ -225,7 +225,7 @@ Server bundles are where the real weight is, and the two spikes are both interes
 
 | Route | server, gzip | note |
 |---|---|---|
-| `/api/og` | 20623.9 KB | `@vercel/og` and its font and WASM payloads |
+| `/api/og` | 20623.9 KB | assumed to be `@vercel/og`; phase 9 traced it and it is `sharp` |
 | `/login` | 1722.8 KB | of which `@faker-js/faker` is 962.8 KB |
 | `/account` | 1708.8 KB | of which `@faker-js/faker` is 962.8 KB |
 | everything else | 510–823 KB | |
@@ -233,6 +233,8 @@ Server bundles are where the real weight is, and the two spikes are both interes
 `@faker-js/faker` pulls in 78 modules and about 963 KB gzipped on two routes, and it is there for six lines in `src/actions/sessionUtils.ts` that invent a name, an address and a phone number at signup. It is correctly server-only — it appears in `.next/server/chunks/ssr/src_actions_auth_ts_*.js` and in **no client chunk at all** — so it costs users nothing. What it costs is serverless function size and cold start on the two routes that import it, which is a real cost on Vercel and an invisible one locally.
 
 `/api/og` at 20 MB is the same shape of problem an order of magnitude up. Phase 9 already owns that route for the prerender warning; this is a second reason to look at it.
+
+> **Corrected in phase 9.** The attribution above is wrong. Reading the route's `.nft.json` trace shows 17.7 MB of it is `@img/sharp-libvips-*/lib/libvips-cpp.dylib`, which `ImageResponse` pulls in to decode image sources; Next's compiled `@vercel/og` accounts for 3.07 MB. The standalone `@vercel/og` package was never traced at all, because Next aliases the import to its own copy. See [`phase-9.md`](./phase-9.md).
 
 ### What it says about `lucide-react`
 
