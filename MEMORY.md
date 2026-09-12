@@ -4,11 +4,17 @@
 
 ## Current phase
 
-**Phase 9: Root params and the OG image** — not started. A `[lang]` root param read with `next/root-params` in place of `getLanguage()`'s `accept-language` header read, then the `/api/og` prerender warning and the 16.2 `ImageResponse` speedup. The plan calls this the first candidate to cut if the workshop runs long, since it is a feature addition rather than an upgrade.
+**Phase 9: The OG image** — done on branch `workshop/phase-9`. `/api/og` became `src/app/opengraph-image.tsx`, importing `ImageResponse` from `next/og`, with the icon and font reads hoisted to module scope. The route went from `ƒ` dynamic to `○` static and the prerender warning is gone. The `[lang]` root param the plan paired with this was dropped before the phase started — see Decisions. Full write-up in [`workshop/phase-9.md`](workshop/phase-9.md).
 
-Phase 8 is done on branch `workshop/phase-8`. Phases 0 through 8 are written up in `workshop/`.
+Phases 0 through 9 are written up in `workshop/`, which completes the plan.
 
-Two items the phase-8 plan listed are still open and would make a phase 8b: directional slides driven by `<Link transitionTypes>`, and a same-route crossfade on `/search`. `appNewScrollHandler` was not touched — it is experimental, which the scope rule excludes.
+- **The social card was returning HTTP 500 in production**, and had been for an unknown number of deploys. `curl https://thefakeshop.vercel.app/api/og` returned `Failed to generate the image` as `text/plain`. The cause was `<img width="96">` — satori rejects a string where it wants a number, the `<img>` ends up with no dimensions, and the data-URL SVGs carry only a `viewBox`, so there is no size to rasterize from. The route's `try/catch` turned that into a 500 nobody looks at. `e2e/opengraph-image.test.ts` now reads the PNG's IHDR chunk and asserts 1200×630.
+- **`ImageResponse`'s Cache Components path is conditional.** Per `next/dist/server/og/cache-image-response.d.ts`, the rasterization is cached in the Resume Data Cache so metadata image routes can prerender — but the element tree is still rendered inside the prerender work-unit store, so any request-time input in it drops the route back to dynamic. The uncached `fetch` calls inside `GET()` were the only reason the route was dynamic.
+- **`next/font` cannot feed `ImageResponse`.** `NextFont` is `{ className, style }` — no buffer, no path — and `next/font` emits `.woff2` while `ImageResponse` accepts only `ttf`/`otf`/`woff`. The font is vendored at `src/images/fonts/Inter-ExtraBold.ttf` (65 KB, latin subset) and read with `readFile`, which also removes a build-time dependency on `fonts.cdnfonts.com`.
+- **`@vercel/og` was never being used.** `next/dist/build/create-compiler-aliases.js:132` maps `'@vercel/og$'` to `next/dist/server/og/image-response`, the same module `next/og` resolves to. The dependency was installed on every build and imported by nothing; removing it saves install time and zero function bytes.
+- **Phase 2's 20.6 MB attribution was wrong, and phase-2.md is corrected.** The route's `.nft.json` trace is 23.1 MB before and 23.2 MB after: 17.7 MB of it is `@img/sharp-libvips-*/libvips-cpp.dylib`, which `ImageResponse` needs to decode image sources, and 3.07 MB is Next's compiled `@vercel/og`. The `vips2png`/`svgload_buffer` strings in the build failure are libvips. Getting that 18 MB out would mean getting `sharp` out of `ImageResponse`, which is not an app-level choice.
+
+With phase 9 done the plan is complete. Two items the phase-8 plan listed are still open and would make a phase 8b if the workshop continues: directional slides driven by `<Link transitionTypes>`, and a same-route crossfade on `/search`. `appNewScrollHandler` was not touched — it is experimental, which the scope rule excludes.
 
 ## Baseline as of 2026-09-02
 
@@ -134,7 +140,7 @@ Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 t
 - `next build` rewrote `tsconfig.json` to `moduleResolution: "bundler"` and calls it mandatory. Committed rather than reverted, since reverting only invites the next build to rewrite it.
 - `AGENTS.md` gained the managed `<!-- BEGIN:nextjs-agent-rules -->` block that `next dev` maintains from 16.3, pointing agents at the docs Next bundles at `node_modules/next/dist/docs/`. Committed on purpose: it regenerates on every dev run, so omitting it means a permanently dirty tree. Stale phase-0 facts in the same file were corrected.
 - `next` and `eslint-config-next` are now exact pins rather than caret ranges, which is what `next upgrade` writes.
-- Two build warnings survived on purpose at the time: middleware deprecation (removed in phase 3) and the `/api/og` prerender warning (phase 9, still open).
+- Two build warnings survived on purpose at the time: middleware deprecation (removed in phase 3) and the `/api/og` prerender warning (removed in phase 9). The build is now warning-free.
 
 ## Decisions
 
@@ -150,6 +156,8 @@ Branch `workshop/phase-1`. `next` 16.1.6 to 16.3.4, `react`/`react-dom` 19.0.4 t
 - **The app has no proxy, decided in phase 3.** `src/middleware.ts` was renamed to `src/proxy.ts` by the codemod and then deleted, because its only job — seeding empty `cart` and `orders` cookies — was a default that belongs in `src/actions/session.ts`. If a future phase wants a proxy back, the bar is something that genuinely has to run in front of the app.
 
 - **The morph is accepted as warm-navigation-only, decided in phase 8.** The alternative is to give the product page a route-level `loading.tsx`-free path that renders the hero in the navigation commit, which means reading `params` above the Suspense boundary and giving back the instant first paint phases 6 and 7 exist for. An instant skeleton beats an animation on a slow page, so the morph stays a warm-path enhancement and the cold path gets the blur-in.
+
+- **No `[lang]` root param, dropped before phase 9.** `getLanguage()` has exactly one consumer in the app: `new Intl.DateTimeFormat(language)` formatting order dates on the account page, so the entire feature is whether a visitor sees `12/09/2026` or `09/12/2026`. A root param is a dynamic segment at the root of `src/app/`, which means every URL in the app carries a locale prefix and every route's static params grow a locale dimension — a site-wide change to the URL shape in exchange for one date format. It would also be less correct than what is there now: `accept-language` is the browser reporting which format the visitor reads, while a root param makes it something they have to select. Phase 9 keeps only its `/api/og` half.
 
 - **No `overrides` block.** `next upgrade` adds one pinning the React types across the tree. Dropped in phase 1 and the install resolved cleanly without it.
 - **Skipped the `cache-components-instant-false` codemod** offered for 16.3. It adds `export const instant = false` to every page and layout as an adoption escape hatch, which phase 6 would only have to delete. Vindicated: phase 6 needed no opt-out on any route.

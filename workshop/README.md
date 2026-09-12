@@ -43,7 +43,7 @@ Each phase document covers:
 
 ### Stretch
 
-- [ ] Phase 9: Root params and the OG image
+- [x] [Phase 9: The OG image](./phase-9.md)
 
 ## Approach
 
