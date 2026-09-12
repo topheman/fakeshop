@@ -6,6 +6,7 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { PageContainer } from "@/components/Layout";
 import { ProductGrid } from "@/components/ProductGrid";
 import { ProductGridLoading } from "@/components/ProductGridLoading";
+import { RevealContent, RevealFallback } from "@/components/Reveal";
 import { getProductsByCategory } from "@/lib/catalog";
 import { slugToDisplayName } from "@/utils/slugUtils";
 
@@ -77,8 +78,16 @@ export default function CategoryPage({
 }) {
   return (
     <PageContainer>
-      <Suspense fallback={<ProductGridLoading />}>
-        <CategoryContent params={params} />
+      <Suspense
+        fallback={
+          <RevealFallback>
+            <ProductGridLoading />
+          </RevealFallback>
+        }
+      >
+        <RevealContent>
+          <CategoryContent params={params} />
+        </RevealContent>
       </Suspense>
     </PageContainer>
   );

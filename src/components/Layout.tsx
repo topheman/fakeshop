@@ -15,7 +15,7 @@ export function Layout({
     <>
       <Header mode={mode} />
       {mode === "shop" && <Cart />}
-      <main className="mx-auto max-w-screen-xl grow bg-background">
+      <main className="mx-auto w-full max-w-screen-xl grow bg-background">
         {children}
       </main>
       <Footer />

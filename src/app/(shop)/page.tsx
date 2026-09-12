@@ -8,6 +8,7 @@ import { CategoryListSkeleton } from "@/components/CategoryListSkeleton";
 import { CustomQRCode } from "@/components/CustomQRCode";
 import { GithubIcon } from "@/components/GithubIcon";
 import { PageContainer } from "@/components/Layout";
+import { RevealContent, RevealFallback } from "@/components/Reveal";
 
 export default function Home() {
   console.log("* Home");
@@ -47,8 +48,16 @@ export default function Home() {
         background regeneration is the thing that fails.
       */}
       <CatalogErrorBoundary label="Categories could not be loaded.">
-        <Suspense fallback={<CategoryListSkeleton />}>
-          <CategoryList />
+        <Suspense
+          fallback={
+            <RevealFallback>
+              <CategoryListSkeleton />
+            </RevealFallback>
+          }
+        >
+          <RevealContent>
+            <CategoryList />
+          </RevealContent>
         </Suspense>
       </CatalogErrorBoundary>
       <div className="mt-10 flex justify-center gap-4">
