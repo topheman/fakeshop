@@ -1,5 +1,3 @@
-import { ViewTransition } from "react";
-
 import { cn } from "@/lib/utils";
 
 import { Cart } from "./Cart";
@@ -25,15 +23,6 @@ export function Layout({
   );
 }
 
-/**
- * The box every page renders its content into, and the reason a navigation
- * animates: React only starts a view transition when a `<ViewTransition>` is
- * part of the update.
- *
- * The name has to be here rather than on `root`, which React cancels outright
- * whenever no boundary activates. A single stable name is also what pairs the
- * outgoing and incoming pages into one snapshot pair instead of two.
- */
 export function PageContainer({
   children,
   className,
@@ -42,10 +31,8 @@ export function PageContainer({
   className?: string;
 }) {
   return (
-    <ViewTransition name="page">
-      <div className={cn("container mx-auto px-4 py-8", className)}>
-        {children}
-      </div>
-    </ViewTransition>
+    <div className={cn("container mx-auto px-4 py-8", className)}>
+      {children}
+    </div>
   );
 }

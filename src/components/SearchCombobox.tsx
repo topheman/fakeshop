@@ -17,7 +17,6 @@ import { useIsMobile } from "@/hooks/utils";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 import { generateProductSlug } from "@/utils/slugUtils";
-import { NAV_FORWARD } from "@/utils/viewTransitions";
 
 export function SearchCombobox({ initialQuery = "" }) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -52,20 +51,16 @@ export function SearchCombobox({ initialQuery = "" }) {
     if (typeof value === "string") {
       // Handle custom search query
       if (pathname === "/search") {
-        // Already on the results page, so this is a content change rather than
-        // a move through the hierarchy. Left untagged on purpose: the crossfade
-        // keyed on the query handles it, and a direction would contradict it.
+        // If already on search page, update the URL without navigation
         router.push("/search?" + createQueryString("q", value));
       } else {
-        router.push(`/search?q=${encodeURIComponent(value)}`, {
-          transitionTypes: NAV_FORWARD,
-        });
+        router.push(`/search?q=${encodeURIComponent(value)}`);
       }
     } else {
       // Handle product selection
       setSelectedProduct(value);
       const slug = generateProductSlug(value.title, value.id);
-      router.push(`/product/${slug}`, { transitionTypes: NAV_FORWARD });
+      router.push(`/product/${slug}`);
     }
     if (isMobile && inputRef.current) {
       inputRef.current.blur();
