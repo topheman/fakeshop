@@ -122,11 +122,8 @@
   animation: scaleInBouncy 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
 }
 
-/*
-  A product image keeps its identity from the grid thumbnail through to the
-  hero on the product page. `share="morph"` on the React <ViewTransition> puts
-  a `morph` class on the transition, which is what these selectors match.
-*/
+/* A product image keeps its identity from grid thumbnail to product hero.
+   `share="morph"` on the <ViewTransition> is what puts the class here. */
 ::view-transition-group(.morph) {
   animation-duration: 400ms;
 }
@@ -142,8 +139,7 @@
   }
 }
 
-/* The transition overlay covers the page, so without this a click landing
-   mid-animation is swallowed instead of reaching the link underneath. */
+/* Without this the overlay swallows a click landing mid-animation. */
 ::view-transition {
   pointer-events: none;
 }
@@ -158,9 +154,8 @@
 }
 
 /*
-  A Suspense fallback handing off to the content it was standing in for. The
-  exit is quick so the placeholder stops competing for attention; the enter
-  fade waits for it to finish, while the slide runs longer than both.
+  A Suspense fallback handing off to its content. The exit is quick, the enter
+  waits for it to finish, and the slide runs longer than both.
 */
 :root {
   --reveal-exit: 150ms;
@@ -201,33 +196,17 @@
 }
 
 /*
-  A navigation that moved through the catalog's hierarchy. Horizontal direction
-  encodes it: forward pushes the old page left and brings the new one in from
-  the right, back does the reverse. The slide outlasts both fades, so the page
-  is still settling into place once it is fully opaque.
+  A navigation through the catalog's hierarchy: forward pushes the old page
+  left and brings the new one in from the right, back does the reverse. Only
+  links tagged with `transitionTypes` reach these rules; everything else keeps
+  the `animation: none` below and swaps in place.
 
-  Both fades run over the same window with complementary linear opacities, and
-  `plus-lighter` makes the two snapshots add rather than composite. Together
-  those keep the painted result fully opaque from start to finish. Sequential
-  fades leave a frame where neither page is drawn and the content area flashes
-  empty; overlapping ones without the blend mode wash out towards the middle,
-  because two half-transparent layers cover less than one opaque one. The
-  browser's own crossfade does exactly this, and overriding `animation` is what
-  drops it.
+  `page` is named by the <ViewTransition> in `Layout.tsx`. Overriding
+  `animation` drops the browser's `plus-lighter` blend, so the fades restore
+  it: complementary linear opacities that add to a fully opaque composite.
+  Without it the crossfade washes out towards the middle.
 
-  `page` is the name the `<ViewTransition>` in `Layout.tsx` puts on the page
-  container. It has to be a single stable name on both sides of the navigation:
-  a boundary that names its outgoing and incoming halves separately produces two
-  independent snapshot pairs, and Safari fills in all four of them, drawing the
-  old page over the new one for the whole transition.
-
-  The group is pinned because the two pages rarely have the same height, and
-  animating the box would drag the content's bottom edge around underneath the
-  slide.
-
-  Only navigations tagged with `transitionTypes` reach the directional rules.
-  The browser's back button, `router.refresh()` and every untagged link get the
-  `animation: none` below and swap in place.
+  The group is pinned because the two pages rarely have the same height.
 */
 :root {
   --nav-fade: 260ms;
@@ -295,12 +274,9 @@ html:active-view-transition-type(nav-back)::view-transition-new(page) {
 }
 
 /*
-  The header is the fixed reference point a directional slide is read against.
-  It carries its own `view-transition-name`, so it is captured separately from
-  the page and can be held still while the page moves under it.
-
-  `display: none` on the old snapshot avoids two headers being briefly visible,
-  and the `z-index` keeps the one that remains above the sliding content.
+  The header is the fixed reference point the slide is read against, so its own
+  `view-transition-name` gets it a snapshot that can be held still. `display:
+  none` on the old one avoids two headers being briefly visible.
 */
 ::view-transition-group(site-header) {
   animation: none;

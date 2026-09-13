@@ -27,16 +27,12 @@ export function Layout({
 
 /**
  * The box every page renders its content into, and the reason a navigation
- * animates at all: React only calls `document.startViewTransition` when a
- * `<ViewTransition>` is part of the update.
+ * animates: React only starts a view transition when a `<ViewTransition>` is
+ * part of the update.
  *
- * The name has to be here rather than on the document root. React cancels the
- * root snapshot outright — it sets `view-transition-name: none` on `<html>` and
- * pins `::view-transition-group(root)` to `opacity: 0` — whenever no boundary
- * activates, so CSS written against `root` never paints. A boundary React keeps
- * is the only surface available, and a stable name is what guarantees the
- * outgoing and incoming pages form a single old/new pair instead of two
- * independent ones.
+ * The name has to be here rather than on `root`, which React cancels outright
+ * whenever no boundary activates. A single stable name is also what pairs the
+ * outgoing and incoming pages into one snapshot pair instead of two.
  */
 export function PageContainer({
   children,

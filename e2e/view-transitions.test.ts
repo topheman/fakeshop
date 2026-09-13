@@ -1,26 +1,18 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * A view transition leaves nothing behind to assert on: it runs on
- * `::view-transition-*` pseudo-elements in an overlay tree that is torn down
- * before the navigation settles. So the suite records each one as it happens.
- * `document.startViewTransition` is wrapped before any app code runs, and the
- * `ready` promise is the single moment where the transition types, the
- * pseudo-elements the browser built, and the animations the CSS matched are all
- * observable at once. Screenshots and video are not an option — neither
- * Chromium's nor WebKit's Playwright capture includes the view transition
- * layer, so a recorded navigation looks like an instant swap either way.
+ * A view transition leaves nothing behind to assert on: it runs on pseudo-
+ * elements in an overlay torn down before the navigation settles, and neither
+ * engine's Playwright capture includes that layer. So `startViewTransition` is
+ * wrapped before app code runs, and `ready` is read — the one moment where the
+ * types, the pseudo-element tree and the matched animations are all observable.
  *
- * Three things are captured because none is sufficient alone. The types prove
- * the tag on the link reached the transition. The pseudo-elements prove the
- * browser built the tree the stylesheet expects — exactly one `page` pair, the
- * shape Safari and Chrome have to agree on. The resolved keyframe offset is the
- * only place `nav-forward` and `nav-back` are distinguishable, since both run
- * the same keyframes with the sign flipped.
+ * All three are needed: the types prove the link's tag arrived, the pseudo-
+ * elements prove the tree is the one the stylesheet expects, and the resolved
+ * keyframe is the only place forward and back differ.
  *
- * Note that `KeyframeEffect.pseudoElement` reports the transition *name*, which
- * for an unnamed `<ViewTransition>` is a generated string like `_t_1_`. It is
- * not the class, so it cannot be asserted against.
+ * `KeyframeEffect.pseudoElement` reports the transition *name*, not the class —
+ * for an unnamed boundary a generated string like `_t_1_`.
  */
 type RecordedTransition = {
   types: string[];
