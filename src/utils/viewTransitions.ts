@@ -13,16 +13,19 @@ export function productImageTransitionName(id: number): string {
  * deeper into the catalog, back is up towards the root; everything else stays
  * untagged and does not animate.
  *
- * These are matched by the `:active-view-transition-type()` rules in
- * `globals.css`, not mapped onto view transition classes.
+ * The strings are matched by `:active-view-transition-type()` in `globals.css`
+ * and are the keys `exceptNavigation()` maps, so renaming one means editing
+ * both.
  */
 export const NAV_FORWARD = ["nav-forward"];
 export const NAV_BACK = ["nav-back"];
 
 /**
  * A view transition class for everything except a directional navigation. Any
- * element a nested `<ViewTransition>` activates is named out of the page
- * snapshot, which punches a hole in the page as it slides.
+ * boundary that activates is named out of the page snapshot and leaves a hole
+ * in it as it slides, so the Suspense reveal and the search crossfade stand
+ * down. The product image morph opts out of this on purpose: flying out of the
+ * sliding page is the effect there.
  */
 export function exceptNavigation(className: string) {
   return { "nav-forward": "none", "nav-back": "none", default: className };

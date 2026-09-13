@@ -18,8 +18,12 @@ type RecordedTransition = {
   types: string[];
   animationNames: string[];
   pseudoElements: string[];
-  /** Where `::view-transition-old(page)` starts its slide, e.g. `-60px`. */
-  pageSlideFrom: string | null;
+  /**
+   * Where the outgoing page ends up: `-60px` forward, `60px` back. Read off the
+   * first authored keyframe of `nav-slide`, which is the animation's
+   * destination rather than its origin because the old snapshot plays reversed.
+   */
+  oldPageSlideTo: string | null;
 };
 
 declare global {
@@ -38,7 +42,7 @@ async function recordViewTransitions(page: Page) {
         types: [],
         animationNames: [],
         pseudoElements: [],
-        pageSlideFrom: null,
+        oldPageSlideTo: null,
       };
       window.__viewTransitions.push(recorded);
 
@@ -64,7 +68,7 @@ async function recordViewTransitions(page: Page) {
               const from = effect?.getKeyframes()[0] as
                 | { translate?: string }
                 | undefined;
-              recorded.pageSlideFrom = from?.translate ?? null;
+              recorded.oldPageSlideTo = from?.translate ?? null;
             }
           }
         },
@@ -106,9 +110,11 @@ async function settle(page: Page) {
 }
 
 /**
- * Runs `action` and returns the transition it started. Animations are collected
- * from a `ready` callback, so the entry exists before it is populated — the
- * wait is for the class, not for the entry.
+ * Runs `action` and returns the transition it started. The record is pushed
+ * synchronously but filled from a `ready` callback, so there is a wait after
+ * the entry appears. It is a fixed one rather than a poll on content: an
+ * untagged navigation runs no animations at all and legitimately records an
+ * empty list, which no poll could tell apart from a record still being filled.
  */
 async function transitionFrom(page: Page, action: () => Promise<void>) {
   await settle(page);
@@ -136,8 +142,8 @@ test("a link deeper into the catalog slides forward", async ({ page }) => {
   expect(transition.types).toEqual(["nav-forward"]);
   expect(transition.animationNames).toContain("nav-slide");
   expect(transition.animationNames).toContain("nav-fade");
-  // Negative on the forward branch, positive on the back one.
-  expect(transition.pageSlideFrom).toContain("-60px");
+  // The outgoing page exits left; the back test asserts the mirror of this.
+  expect(transition.oldPageSlideTo).toContain("-60px");
   // The regression guard. One old and one new, both under the same name: a
   // boundary that names its two halves separately makes Safari build a second
   // pair of snapshots and draw both pages at once.
@@ -167,7 +173,7 @@ test("a link back up the hierarchy slides the other way", async ({ page }) => {
 
   expect(transition.types).toEqual(["nav-back"]);
   expect(transition.animationNames).toContain("nav-slide");
-  expect(transition.pageSlideFrom).toBe("60px");
+  expect(transition.oldPageSlideTo).toBe("60px");
   await expect(page).toHaveURL("/category/smartphones");
 });
 
@@ -184,7 +190,7 @@ test("a link that leaves the catalog carries no direction", async ({
 
   expect(transition.types).toEqual([]);
   expect(transition.animationNames).not.toContain("nav-slide");
-  expect(transition.pageSlideFrom).toBeNull();
+  expect(transition.oldPageSlideTo).toBeNull();
   // `/account` redirects a logged-out visitor, and the redirect target is
   // wrapped in a `PageContainer` too, so it is still the untagged path.
   await expect(page).toHaveURL(/\/login/);

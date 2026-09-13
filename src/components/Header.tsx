@@ -11,6 +11,8 @@ import { UserIcon } from "./UserIcon";
 
 export function Header({ mode }: { mode?: "shop" | "checkout" }) {
   return (
+    // Snapshotted under its own name so the sliding page cannot paint over it.
+    // The rules that hold that snapshot still are in `globals.css`.
     <header
       className="bg-primary p-2 text-white"
       style={{ viewTransitionName: "site-header" }}

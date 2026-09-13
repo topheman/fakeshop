@@ -274,9 +274,10 @@ html:active-view-transition-type(nav-back)::view-transition-new(page) {
 }
 
 /*
-  The header is the fixed reference point the slide is read against, so its own
-  `view-transition-name` gets it a snapshot that can be held still. `display:
-  none` on the old one avoids two headers being briefly visible.
+  The header is the fixed reference point the slide is read against. It is
+  outside the page snapshot, but that snapshot paints over it, so it needs a
+  name of its own and a group above the page to stay visible and still. The old
+  copy is identical to the new one and would only fade out on top of it.
 */
 ::view-transition-group(site-header) {
   animation: none;
