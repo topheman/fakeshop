@@ -6,6 +6,7 @@ import { slugToDisplayName } from "@/utils/slugUtils";
 
 import { CategoryIcon } from "./CategoryIcon";
 import { ProductGridSkeleton } from "./ProductGridSkeleton";
+import { RevealFallback } from "./Reveal";
 
 export const experimental_ppr = false;
 
@@ -69,7 +70,9 @@ export function ProductGridLoading() {
         ) : null}
         <span>{title}</span>
       </h1>
-      <ProductGridSkeleton />
+      <RevealFallback>
+        <ProductGridSkeleton />
+      </RevealFallback>
     </>
   );
 }

@@ -2,7 +2,7 @@ import { Suspense, ViewTransition } from "react";
 
 import { PageContainer } from "@/components/Layout";
 import { ProductGridLoading } from "@/components/ProductGridLoading";
-import { RevealContent, RevealFallback } from "@/components/Reveal";
+import { RevealContent } from "@/components/Reveal";
 import { SearchResults } from "@/components/SearchResults";
 import { exceptNavigation } from "@/utils/viewTransitions";
 
@@ -31,15 +31,17 @@ async function SearchContent({
       <h1 className="mb-4 text-3xl font-bold text-primary">
         {query ? `Search Results for "${query}"` : "Search Products"}
       </h1>
-      <ViewTransition
-        key={query}
-        name="search-results"
-        share="auto"
-        enter={exceptNavigation("auto")}
-        default="none"
-      >
-        <SearchResults query={query} />
-      </ViewTransition>
+      <RevealContent>
+        <ViewTransition
+          key={query}
+          name="search-results"
+          share="auto"
+          enter={exceptNavigation("auto")}
+          default="none"
+        >
+          <SearchResults query={query} />
+        </ViewTransition>
+      </RevealContent>
     </>
   );
 }
@@ -52,16 +54,8 @@ export default function SearchPage({
 }) {
   return (
     <PageContainer>
-      <Suspense
-        fallback={
-          <RevealFallback>
-            <ProductGridLoading />
-          </RevealFallback>
-        }
-      >
-        <RevealContent>
-          <SearchContent searchParams={searchParams} />
-        </RevealContent>
+      <Suspense fallback={<ProductGridLoading />}>
+        <SearchContent searchParams={searchParams} />
       </Suspense>
     </PageContainer>
   );
