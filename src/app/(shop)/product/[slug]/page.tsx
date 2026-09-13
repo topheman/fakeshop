@@ -55,14 +55,15 @@ async function ProductDetail({ id }: { id: number }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2">
       <h1 className="mb-0 flex items-center text-3xl font-bold text-primary md:col-span-2 md:mb-4">
-        <span className="mr-2">{product.title}</span>
         <Link
           href={`/category/${product.category}`}
           transitionTypes={NAV_BACK}
           title={`View all ${product.category} products`}
+          className="mr-2 shrink-0"
         >
           <CategoryIcon category={product.category} className="size-6" />
         </Link>
+        <span>{product.title}</span>
       </h1>
       <div>
         {/*

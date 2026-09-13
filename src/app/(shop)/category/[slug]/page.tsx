@@ -32,8 +32,8 @@ async function CategoryContent({
   return (
     <>
       <h1 className="mb-8 flex items-center text-3xl font-bold text-primary">
-        <span className="mr-2">{slugToDisplayName(slug)}</span>
-        <CategoryIcon category={slug} className="size-6" />
+        <CategoryIcon category={slug} className="mr-2 size-6 shrink-0" />
+        <span>{slugToDisplayName(slug)}</span>
       </h1>
       <CatalogErrorBoundary label="These products could not be loaded.">
         <CategoryProducts slug={slug} />
