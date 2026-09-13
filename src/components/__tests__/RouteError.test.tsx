@@ -9,9 +9,9 @@ describe("RouteError", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  // This project has no vitest setup file, so React Testing Library's
-  // automatic cleanup never runs and rendered trees pile up in the same
-  // document between tests.
+  // Vitest runs without globals, so React Testing Library never finds an
+  // `afterEach` to register its automatic cleanup on and rendered trees pile
+  // up in the same document between tests.
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();

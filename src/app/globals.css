@@ -122,11 +122,8 @@
   animation: scaleInBouncy 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
 }
 
-/*
-  A product image keeps its identity from the grid thumbnail through to the
-  hero on the product page. `share="morph"` on the React <ViewTransition> puts
-  a `morph` class on the transition, which is what these selectors match.
-*/
+/* A product image keeps its identity from grid thumbnail to product hero.
+   `share="morph"` on the <ViewTransition> is what puts the class here. */
 ::view-transition-group(.morph) {
   animation-duration: 400ms;
 }
@@ -142,8 +139,7 @@
   }
 }
 
-/* The transition overlay covers the page, so without this a click landing
-   mid-animation is swallowed instead of reaching the link underneath. */
+/* Without this the overlay swallows a click landing mid-animation. */
 ::view-transition {
   pointer-events: none;
 }
@@ -158,9 +154,8 @@
 }
 
 /*
-  A Suspense fallback handing off to the content it was standing in for. The
-  exit is quick so the placeholder stops competing for attention; the enter
-  fade waits for it to finish, while the slide runs longer than both.
+  A Suspense fallback handing off to its content. The exit is quick, the enter
+  waits for it to finish, and the slide runs longer than both.
 */
 :root {
   --reveal-exit: 150ms;
@@ -198,4 +193,101 @@
   to {
     transform: translateY(0);
   }
+}
+
+/*
+  A navigation through the catalog's hierarchy: forward pushes the old page
+  left and brings the new one in from the right, back does the reverse. Only
+  links tagged with `transitionTypes` reach these rules; everything else keeps
+  the `animation: none` below and swaps in place.
+
+  `page` is named by the <ViewTransition> in `Layout.tsx`. Overriding
+  `animation` drops the browser's `plus-lighter` blend, so the fades restore
+  it: complementary linear opacities that add to a fully opaque composite.
+  Without it the crossfade washes out towards the middle.
+
+  The group is pinned because the two pages rarely have the same height.
+*/
+:root {
+  --nav-fade: 260ms;
+  --nav-move: 400ms;
+  --nav-offset: 60px;
+}
+
+::view-transition-group(page) {
+  animation: none;
+}
+
+::view-transition-old(page),
+::view-transition-new(page) {
+  animation: none;
+}
+
+html:active-view-transition-type(nav-forward)::view-transition-old(page),
+html:active-view-transition-type(nav-back)::view-transition-old(page) {
+  animation:
+    var(--nav-fade) linear both nav-fade reverse,
+    var(--nav-move) ease-in-out both nav-slide reverse;
+  mix-blend-mode: plus-lighter;
+}
+
+html:active-view-transition-type(nav-forward)::view-transition-new(page),
+html:active-view-transition-type(nav-back)::view-transition-new(page) {
+  animation:
+    var(--nav-fade) linear both nav-fade,
+    var(--nav-move) ease-in-out both nav-slide;
+  mix-blend-mode: plus-lighter;
+}
+
+html:active-view-transition-type(nav-forward)::view-transition-old(page) {
+  --nav-slide: calc(-1 * var(--nav-offset));
+}
+
+html:active-view-transition-type(nav-forward)::view-transition-new(page) {
+  --nav-slide: var(--nav-offset);
+}
+
+html:active-view-transition-type(nav-back)::view-transition-old(page) {
+  --nav-slide: var(--nav-offset);
+}
+
+html:active-view-transition-type(nav-back)::view-transition-new(page) {
+  --nav-slide: calc(-1 * var(--nav-offset));
+}
+
+@keyframes nav-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes nav-slide {
+  from {
+    translate: var(--nav-slide);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+/*
+  The header is the fixed reference point the slide is read against. It is
+  outside the page snapshot, but that snapshot paints over it, so it needs a
+  name of its own and a group above the page to stay visible and still. The old
+  copy is identical to the new one and would only fade out on top of it.
+*/
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
 }

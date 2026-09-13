@@ -2,6 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import Link from "next/link";
 
 import { getCategories } from "@/lib/catalog";
+import { NAV_FORWARD } from "@/utils/viewTransitions";
 
 import { CategoryIcon } from "./CategoryIcon";
 
@@ -29,6 +30,7 @@ export async function CategoryList() {
           <Link
             key={category.slug}
             href={`/category/${category.slug}`}
+            transitionTypes={NAV_FORWARD}
             className="flex flex-col items-center rounded-lg border p-4 transition-colors hover:bg-gray-50"
             title={category.name}
           >

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { ViewTransition } from "react";
 
+import { exceptNavigation } from "@/utils/viewTransitions";
+
 /**
  * The two halves of a Suspense reveal. `RevealFallback` wraps the fallback and
  * `RevealContent` wraps the children of the same `<Suspense>`, so the
@@ -13,7 +15,7 @@ import { ViewTransition } from "react";
  */
 export function RevealFallback({ children }: { children: ReactNode }) {
   return (
-    <ViewTransition exit="slide-down" default="none">
+    <ViewTransition exit={exceptNavigation("slide-down")} default="none">
       {children}
     </ViewTransition>
   );
@@ -21,7 +23,7 @@ export function RevealFallback({ children }: { children: ReactNode }) {
 
 export function RevealContent({ children }: { children: ReactNode }) {
   return (
-    <ViewTransition enter="slide-up" default="none">
+    <ViewTransition enter={exceptNavigation("slide-up")} default="none">
       {children}
     </ViewTransition>
   );

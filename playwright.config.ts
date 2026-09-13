@@ -21,7 +21,13 @@ export default defineConfig({
     baseURL,
     trace: "on-first-retry",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // Both engines, because the view transition assertions are the whole point of
+  // several specs and WebKit builds the pseudo-element tree differently enough
+  // that a Chromium-only run says nothing about what Safari does.
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "webkit", use: { ...devices["Desktop Safari"] } },
+  ],
   webServer: {
     command: `npm run build && npm run start -- --port ${port}`,
     url: baseURL,
