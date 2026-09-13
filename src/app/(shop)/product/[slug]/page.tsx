@@ -11,7 +11,7 @@ import { RevealContent } from "@/components/Reveal";
 import { getProduct } from "@/lib/catalog";
 import { IMAGE_BLUR_PLACEHOLDER } from "@/utils/constants";
 import { extractProductIdFromSlug } from "@/utils/slugUtils";
-import { NAV_BACK, productImageTransitionName } from "@/utils/viewTransitions";
+import { productImageTransitionName } from "@/utils/viewTransitions";
 
 /**
  * Reads `params`, which is request-time data. This is the cache boundary:
@@ -57,7 +57,6 @@ async function ProductDetail({ id }: { id: number }) {
       <h1 className="mb-0 flex items-center text-3xl font-bold text-primary md:mb-4">
         <Link
           href={`/category/${product.category}`}
-          transitionTypes={NAV_BACK}
           title={`View all ${product.category} products`}
           className="mr-2 shrink-0"
         >

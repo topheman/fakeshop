@@ -1,5 +1,7 @@
 # Phase 8b: Finishing the navigation polish
 
+> **Reverted.** The animations this phase shipped caused problems in use and were taken back out on `workshop/revert-phase-8b`. The document stays as the record of what was learned. The concepts below are accurate, but nothing described under "Implementation" is in the tree any more — see [What survived the revert](#what-survived-the-revert) at the bottom.
+
 Phase 8 left two of the four view transition patterns on the table — the **directional slide**, which needs `transitionTypes` and a notion of forward and back, and the **same-route crossfade** on `/search` — plus one unverified claim: that the Suspense reveal animates on a cold product load.
 
 This phase builds both and answers the question (it does). Most of the work turned out to be measurement: the slide took three designs to get right, and two of them passed every automated test while being invisible or broken on screen.
@@ -330,6 +332,8 @@ One small trap: the "leaves the catalog" test clicks the account icon and lands 
 
 ## Key files
 
+These are the files the phase touched. The revert restored all of them except the last two, so the links describe what the code looked like at `826ccf9` rather than what is there now.
+
 - [`src/utils/viewTransitions.ts`](../src/utils/viewTransitions.ts) — the two type arrays and `exceptNavigation()`
 - [`src/components/Layout.tsx`](../src/components/Layout.tsx) — `PageContainer`, the `name="page"` boundary every page mounts
 - [`src/app/(shop)/search/page.tsx`](<../src/app/(shop)/search/page.tsx>) — the keyed crossfade
@@ -356,3 +360,14 @@ One small trap: the "leaves the catalog" test clicks the account icon and lands 
 - `KeyframeEffect.pseudoElement` reports the transition **name**, not the class. For an unnamed boundary that is a generated string like `_t_0_`, so it cannot be asserted against — but its _presence_ can be, since a page split across two generated names is exactly the regression this phase fixed.
 - **A cross-engine test project is not optional for CSS this new.** Everything shipped green in Chromium and was visibly broken in Safari, and the failure mode is silent.
 - **This repo runs two Reacts.** The App Router uses the canary Next bundles, the unit tests the stable one at the project root. They can diverge on canary APIs, and they cannot be forced together from the bundler, because Testing Library resolves `react-dom` through Node where aliases do not reach.
+
+## What survived the revert
+
+The slide, the crossfade and everything that supported them are gone: the `name="page"` boundary on `PageContainer`, the header's own `view-transition-name`, every `transitionTypes` tag, `NAV_FORWARD` / `NAV_BACK` / `exceptNavigation()`, and the nav and header blocks in `globals.css`. Phase 8's morph and Suspense reveal are untouched, and `PageContainer` is a plain `<div>` again.
+
+The measurement work stayed, because it is useful regardless of which animations exist:
+
+- The `webkit` Playwright project and the `webkit` download in `test:e2e:install`. The lesson that shipped-green-in-Chromium can be visibly broken in Safari is the reason this phase existed.
+- The Chromium-only `test.skip` guard in `e2e/instant-navigation.test.ts` — `instant()` does not hold a navigation in WebKit, so those assertions would pass for the wrong reason.
+- `vitest.setup.ts`, the `<ViewTransition>` passthrough that reconciles the canary React the App Router runs on with the stable one Vitest resolves.
+- `e2e/view-transitions.test.ts`, trimmed to the `startViewTransition` recorder and two assertions about phase 8: that the Suspense reveal runs its keyframes on a cold product load, and that the product image morph names its snapshot. The five slide and crossfade assertions went with the code they covered.
