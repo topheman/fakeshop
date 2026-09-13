@@ -6,7 +6,7 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { PageContainer } from "@/components/Layout";
 import { ProductGrid } from "@/components/ProductGrid";
 import { ProductGridLoading } from "@/components/ProductGridLoading";
-import { RevealContent, RevealFallback } from "@/components/Reveal";
+import { RevealContent } from "@/components/Reveal";
 import { getProductsByCategory } from "@/lib/catalog";
 import { slugToDisplayName } from "@/utils/slugUtils";
 
@@ -32,12 +32,14 @@ async function CategoryContent({
   return (
     <>
       <h1 className="mb-8 flex items-center text-3xl font-bold text-primary">
-        <span className="mr-2">{slugToDisplayName(slug)}</span>
-        <CategoryIcon category={slug} className="size-6" />
+        <CategoryIcon category={slug} className="mr-2 size-6 shrink-0" />
+        <span>{slugToDisplayName(slug)}</span>
       </h1>
-      <CatalogErrorBoundary label="These products could not be loaded.">
-        <CategoryProducts slug={slug} />
-      </CatalogErrorBoundary>
+      <RevealContent>
+        <CatalogErrorBoundary label="These products could not be loaded.">
+          <CategoryProducts slug={slug} />
+        </CatalogErrorBoundary>
+      </RevealContent>
     </>
   );
 }
@@ -78,16 +80,8 @@ export default function CategoryPage({
 }) {
   return (
     <PageContainer>
-      <Suspense
-        fallback={
-          <RevealFallback>
-            <ProductGridLoading />
-          </RevealFallback>
-        }
-      >
-        <RevealContent>
-          <CategoryContent params={params} />
-        </RevealContent>
+      <Suspense fallback={<ProductGridLoading />}>
+        <CategoryContent params={params} />
       </Suspense>
     </PageContainer>
   );

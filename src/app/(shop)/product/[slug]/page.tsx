@@ -7,7 +7,7 @@ import { AddToCartButton } from "@/components/AddToCartButton";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { PageContainer } from "@/components/Layout";
 import { ProductCardLoading } from "@/components/ProductCardLoading";
-import { RevealContent, RevealFallback } from "@/components/Reveal";
+import { RevealContent } from "@/components/Reveal";
 import { getProduct } from "@/lib/catalog";
 import { IMAGE_BLUR_PLACEHOLDER } from "@/utils/constants";
 import { extractProductIdFromSlug } from "@/utils/slugUtils";
@@ -53,47 +53,52 @@ async function ProductDetail({ id }: { id: number }) {
   const product = await getProduct(id);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2">
-      <h1 className="mb-0 flex items-center text-3xl font-bold text-primary md:col-span-2 md:mb-4">
-        <span className="mr-2">{product.title}</span>
+    <>
+      <h1 className="mb-0 flex items-center text-3xl font-bold text-primary md:mb-4">
         <Link
           href={`/category/${product.category}`}
           transitionTypes={NAV_BACK}
           title={`View all ${product.category} products`}
+          className="mr-2 shrink-0"
         >
           <CategoryIcon category={product.category} className="size-6" />
         </Link>
+        <span>{product.title}</span>
       </h1>
-      <div>
-        {/*
-          The second half of the morph. The blur placeholder matters here: the
-          hero is the destination the transition animates towards, and an
-          <Image> that has not decoded yet paints nothing for it to land on.
-        */}
-        <ViewTransition
-          name={productImageTransitionName(product.id)}
-          share="morph"
-          default="none"
-        >
-          <Image
-            src={product.thumbnail || "/placeholder.svg"}
-            placeholder="blur"
-            blurDataURL={IMAGE_BLUR_PLACEHOLDER}
-            alt={product.title}
-            width={500}
-            height={500}
-            className="h-auto w-full rounded-lg object-cover"
-          />
-        </ViewTransition>
-      </div>
-      <div>
-        <p className="mb-4 text-gray-600">{product.description}</p>
-        <p className="mb-4 flex items-center justify-between text-2xl font-bold text-primary">
-          <span>${product.price.toFixed(2)}</span>
-          <AddToCartButton id={product.id} title={product.title} />
-        </p>
-      </div>
-    </div>
+      <RevealContent>
+        <div className="grid grid-cols-1 md:grid-cols-2">
+          <div>
+            {/*
+            The second half of the morph. The blur placeholder matters here: the
+            hero is the destination the transition animates towards, and an
+            <Image> that has not decoded yet paints nothing for it to land on.
+          */}
+            <ViewTransition
+              name={productImageTransitionName(product.id)}
+              share="morph"
+              default="none"
+            >
+              <Image
+                src={product.thumbnail || "/placeholder.svg"}
+                placeholder="blur"
+                blurDataURL={IMAGE_BLUR_PLACEHOLDER}
+                alt={product.title}
+                width={500}
+                height={500}
+                className="h-auto w-full rounded-lg object-cover"
+              />
+            </ViewTransition>
+          </div>
+          <div>
+            <p className="mb-4 text-gray-600">{product.description}</p>
+            <p className="mb-4 flex items-center justify-between text-2xl font-bold text-primary">
+              <span>${product.price.toFixed(2)}</span>
+              <AddToCartButton id={product.id} title={product.title} />
+            </p>
+          </div>
+        </div>
+      </RevealContent>
+    </>
   );
 }
 
@@ -105,16 +110,8 @@ export default function ProductPage({
 }) {
   return (
     <PageContainer>
-      <Suspense
-        fallback={
-          <RevealFallback>
-            <ProductCardLoading />
-          </RevealFallback>
-        }
-      >
-        <RevealContent>
-          <ProductContent params={params} />
-        </RevealContent>
+      <Suspense fallback={<ProductCardLoading />}>
+        <ProductContent params={params} />
       </Suspense>
     </PageContainer>
   );
