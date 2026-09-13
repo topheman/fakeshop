@@ -49,8 +49,14 @@ export function ProductCardLoading() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2">
-      <h1 className="mb-1 text-3xl font-bold text-primary md:col-span-2 md:mb-4">
-        {title}
+      <h1 className="mb-1 flex items-center text-3xl font-bold text-primary md:col-span-2 md:mb-4">
+        {/*
+          A product URL carries no category, so the icon cannot be rendered
+          here. The slot is held open at its size so the title lands on the
+          same x as the loaded page puts it.
+        */}
+        <span aria-hidden="true" className="mr-2 size-6 shrink-0" />
+        <span>{title}</span>
       </h1>
       <div className="w-full overflow-hidden rounded-lg bg-gray-200">
         {/*
