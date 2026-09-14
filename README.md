@@ -1,18 +1,16 @@
 # FakeShop
 
-FakeShop is a demo e-commerce website built with Next.js 15, where I
-test the latest features of the framework, like React Server Components,
-server actions, streaming, and progressive enhancement.
+FakeShop is a demo e-commerce website built with Next.js 16 and React 19, where I test the latest features of the framework, like React Server Components, server actions, streaming, progressive enhancement, Cache Components, partial prefetching and view transitions.
 
 [👀 Checkout the live demo](https://thefakeshop.vercel.app).
 
-[👨‍💻 Read the article I wrote on dev.to for more details about the project](https://dev.to/topheman/react-server-components-in-practice-building-a-fake-e-commerce-site-with-nextjs-15-latest-features-73p).
+[👨‍💻 Read the article I wrote on dev.to for more details about the project](https://dev.to/topheman/react-server-components-in-practice-building-a-fake-e-commerce-site-with-nextjs-15-latest-features-73p) — it describes the Next.js 15 version of the app, tagged [`v1.0.1`](https://github.com/topheman/fakeshop/releases/tag/v1.0.1). The upgrade to Next.js 16 is documented phase by phase in [`workshop/`](./workshop/README.md).
 
 ## Installation
 
 ```bash
 npm install
-npm run test:e2e:install # downloads Chromium, once, for the end-to-end tests
+npm run test:e2e:install # downloads Chromium and WebKit, once, for the end-to-end tests
 ```
 
 ## Running
