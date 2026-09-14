@@ -8,7 +8,7 @@ export function createUserInfos(): UserInfos {
     lastName: faker.person.lastName(),
     address: faker.location.streetAddress(),
     country: faker.location.country(),
-    phoneNumber: faker.phone.number("+## # ## ## ## ##"),
+    phoneNumber: faker.phone.number({ style: "international" }),
     email: faker.internet.email(),
   };
 

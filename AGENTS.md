@@ -44,7 +44,7 @@ When a phase is done, write `workshop/phase-N.md` covering the concepts, what ch
 
 - ALWAYS ASK FOR CONFIRMATION before installing a new dependency.
 - `npm run lint`, `npm run lint:fix`, `npm run test`, `npm run typecheck`, `npm run build`.
-- `npm run test:e2e` builds the app and serves it on port 3030, so it never touches the dev server on 3000. It needs Chromium, which `npm run test:e2e:install` downloads once. Nothing downloads a browser on `npm install` — keep it that way, Vercel runs the same install.
+- `npm run test:e2e` builds the app and serves it on port 3030, so it never touches the dev server on 3000. It needs Chromium and WebKit, which `npm run test:e2e:install` downloads once. Nothing downloads a browser on `npm install` — keep it that way, Vercel runs the same install.
 - The end-to-end suite only works against a production build with `NEXT_E2E_TESTING=1`, which `playwright.config.ts` sets for itself. Do not set `exposeTestingApiInProductionBuild` to a bare `true`; it must never ship to the live site.
 - Write tests for logic you add. The existing suite is thin, which is fine.
 - Format on save is on, pre-commit hooks run lint, format, tests and typecheck on staged files.

@@ -18,7 +18,7 @@ export default function Home() {
         Welcome to FakeShop
       </h1>
       <p className="mb-4">
-        FakeShop is a demo e-commerce website built with Next.js 15, where I
+        FakeShop is a demo e-commerce website built with Next.js 16, where I
         test the latest features of the framework, like:
       </p>
       <ul className="mb-4 list-disc space-y-2 pl-8 leading-4">
@@ -26,6 +26,9 @@ export default function Home() {
         <li>Server actions</li>
         <li>Progressive enhancement</li>
         <li>Streaming</li>
+        <li>Cache Components</li>
+        <li>Partial prefetching</li>
+        <li>View transitions</li>
       </ul>
       <p>
         Enjoy the demo and{" "}
@@ -38,7 +41,7 @@ export default function Home() {
         >
           read the article I wrote on dev.to
         </a>{" "}
-        for more details about the project.
+        for more details about the first version of the project.
       </p>
       {/*
         The least likely of the three boundaries to ever fire. `/` prerenders
