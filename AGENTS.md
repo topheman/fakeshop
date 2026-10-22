@@ -30,8 +30,8 @@ When a phase is done, write `workshop/phase-N.md` covering the concepts, what ch
 
 ## Tech stack
 
-- Next.js App Router, 16.3.4, pinned exactly
-- React 19.2.8
+- Next.js App Router, 16.4.2, pinned exactly
+- React 19.3.1, pinned exactly
 - TypeScript 6 for the editor and ESLint, TypeScript 7 for `npm run typecheck` (see [`workshop/phase-2.md`](workshop/phase-2.md)), Tailwind CSS 3.4, `shadcn/ui` components under `src/components/ui`
 - TanStack Query for the client-side search box
 - Vitest with React Testing Library for unit tests; Playwright for end-to-end tests in `e2e/`, which assert instant navigations with `instant()` from `@next/playwright` (see [`workshop/phase-7.md`](workshop/phase-7.md))
