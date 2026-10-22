@@ -341,7 +341,7 @@ These are the files the phase touched. The revert restored all of them except th
 - [`src/app/globals.css`](../src/app/globals.css) — the page slide, the type gating and the header anchoring
 - [`e2e/view-transitions.test.ts`](../e2e/view-transitions.test.ts) — the `startViewTransition` recorder and the five assertions
 - [`playwright.config.ts`](../playwright.config.ts) — the `webkit` project
-- [`vitest.setup.ts`](../vitest.setup.ts) — the `<ViewTransition>` passthrough for the stable React
+- [`vitest.setup.ts`](https://github.com/topheman/fakeshop/blob/2792e10c8e404f92f6c77a0ca93c7ac94f0162e0/vitest.setup.ts) — the `<ViewTransition>` passthrough for the stable React (removed once the root `react` 19.3.1 exported `ViewTransition`)
 
 ## Learning outcomes
 
@@ -369,5 +369,5 @@ The measurement work stayed, because it is useful regardless of which animations
 
 - The `webkit` Playwright project and the `webkit` download in `test:e2e:install`. The lesson that shipped-green-in-Chromium can be visibly broken in Safari is the reason this phase existed.
 - The Chromium-only `test.skip` guard in `e2e/instant-navigation.test.ts` — `instant()` does not hold a navigation in WebKit, so those assertions would pass for the wrong reason.
-- `vitest.setup.ts`, the `<ViewTransition>` passthrough that reconciles the canary React the App Router runs on with the stable one Vitest resolves.
+- [`vitest.setup.ts`](https://github.com/topheman/fakeshop/blob/2792e10c8e404f92f6c77a0ca93c7ac94f0162e0/vitest.setup.ts), the `<ViewTransition>` passthrough that reconciles the canary React the App Router runs on with the stable one Vitest resolves. Removed once React 19.3.1 exported `ViewTransition` from the root `react`.
 - `e2e/view-transitions.test.ts`, trimmed to the `startViewTransition` recorder and two assertions about phase 8: that the Suspense reveal runs its keyframes on a cold product load, and that the product image morph names its snapshot. The five slide and crossfade assertions went with the code they covered.

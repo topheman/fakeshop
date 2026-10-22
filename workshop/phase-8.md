@@ -249,7 +249,7 @@ document
 - [`src/components/Reveal.tsx`](../src/components/Reveal.tsx) — the `enter`/`exit` pair
 - [`src/app/globals.css`](../src/app/globals.css) — every animation, plus the `pointer-events` and reduced-motion rules
 - [`src/components/ProductCardLoading.tsx`](../src/components/ProductCardLoading.tsx) — the URL read that keeps the shell param-independent
-- [`src/types/react-canary.d.ts`](../src/types/react-canary.d.ts) — `@types/react` only declares `ViewTransition` in its canary entry point
+- [`src/types/react-canary.d.ts`](https://github.com/topheman/fakeshop/blob/2792e10c8e404f92f6c77a0ca93c7ac94f0162e0/src/types/react-canary.d.ts) — `@types/react` only declares `ViewTransition` in its canary entry point (removed once `@types/react` 19.3.0 declared it in its main entry point)
 
 ## Learning outcomes
 
