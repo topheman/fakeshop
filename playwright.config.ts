@@ -1,11 +1,20 @@
+import { createHash } from "node:crypto";
+
 import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Not 3000: `next dev` owns that port, and a dev server never prefetches, so
  * reusing it would make every instant-navigation assertion below meaningless.
- * The suite always builds and serves its own production server.
+ * The suite always builds and serves its own production server, on a port
+ * between 3030 and 3129 derived from the checkout path, so suites in parallel
+ * worktrees rarely share one, and a collision fails instead of reusing a server.
  */
-const port = Number(process.env.E2E_PORT ?? 3030);
+const portOffset =
+  createHash("sha1")
+    .update(import.meta.dirname)
+    .digest()
+    .readUInt16BE(0) % 100;
+const port = Number(process.env.E2E_PORT ?? 3030 + portOffset);
 const baseURL = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
