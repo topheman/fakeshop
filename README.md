@@ -25,9 +25,11 @@ Go to [http://localhost:3000](http://localhost:3000) to see the app running.
 - unit tests: `npm run test`
 - end-to-end tests: `npm run test:e2e`, or `npm run test:e2e:ui` for the Playwright UI
 
-The end-to-end suite builds the app and serves it on port 3030, so it never collides with a dev server on 3000 — and it has to, because a dev server does not prefetch and the suite asserts on prefetched UI.
+The end-to-end suite builds the app and serves it on a port between 3030 and 3129 derived from the checkout path (`E2E_PORT` overrides it), so it never collides with a dev server on 3000 — and it has to, because a dev server does not prefetch and the suite asserts on prefetched UI.
 
 ## Notes
+
+- [T3 Code](https://t3.codes) worktrees run `scripts/setup-worktree.sh` from `t3.json` on creation: it installs dependencies and links the main checkout's `.env.local` when there is one.
 
 - If you are using VSCode, the project is already configured to format the code on save using Eslint and Prettier.
 - Precommit hooks are configured to run linting, formatting, tests and typechecking on the modified files.
