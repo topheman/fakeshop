@@ -46,7 +46,7 @@ async function fetchApi<T>(
 ): Promise<T> {
   const res = await fetch(`${BASE_URL}${endpoint}`, options);
   if (!res.ok) {
-    throw new Error(`API request failed: ${res.statusText}`);
+    throw new Error(`API request failed with status ${res.status}`);
   }
   return res.json();
 }
